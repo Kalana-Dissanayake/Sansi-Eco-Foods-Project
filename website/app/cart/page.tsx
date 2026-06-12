@@ -49,7 +49,7 @@ export default function CartPage() {
     <section className="section-padding">
       <div className="container-fluid px-lg-5">
         {/* Header */}
-        <div className="page-header mb-5" style={{ position: 'static', padding: '30px 0 20px' }}>
+        <div className="page-header mb-5" style={{ position: 'relative', padding: '30px 0 20px' }}>
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb mb-2">
               <li className="breadcrumb-item"><Link href="/">Home</Link></li>

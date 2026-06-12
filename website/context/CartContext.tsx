@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useReducer,
   useCallback,
+  useState,
 } from 'react';
 import type { CartItem, CartContextType, Product } from '../../shared/types';
 
@@ -84,6 +85,7 @@ const CartContext = createContext<CartContextType | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, dispatch] = useReducer(cartReducer, []);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // Hydrate from localStorage on mount (SSR-safe)
   useEffect(() => {
@@ -96,16 +98,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // localStorage unavailable or corrupted
     }
+    setIsHydrated(true);
   }, []);
 
   // Persist to localStorage on every change
   useEffect(() => {
+    if (!isHydrated) return;
     try {
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
     } catch {
       // localStorage unavailable
     }
-  }, [items]);
+  }, [items, isHydrated]);
 
   const addToCart = useCallback((product: Product, quantity = 1) => {
     dispatch({ type: 'ADD_ITEM', payload: { product, quantity } });
