@@ -1,0 +1,18 @@
+{
+  "projects": {
+    "default": "sansi-eco-foods"
+  },
+  "targets": {
+    "sansi-eco-foods": {
+      "hosting": {
+        "website": [
+          "sansi-eco-foods"
+        ],
+        "admin": [
+          "sansi-eco-foods-admin"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
