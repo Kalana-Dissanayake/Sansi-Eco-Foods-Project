@@ -29,7 +29,8 @@ export default function TopBar({
               </a>
             </small>
           </div>
-          <div className="col-lg-6 text-end">
+          <div className="col-lg-6 text-end d-flex align-items-center justify-content-end gap-1">
+            <small className="text-white me-2" style={{ fontSize: '13px', fontWeight: 500 }}>Follow us:</small>
             {facebookUrl && (
               <a
                 href={facebookUrl}

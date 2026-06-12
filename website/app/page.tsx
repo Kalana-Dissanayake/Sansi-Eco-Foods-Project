@@ -5,7 +5,7 @@ import AboutSnippet from '../components/home/AboutSnippet';
 import FeaturesSection from '../components/home/FeaturesSection';
 import FeaturedProducts from '../components/home/FeaturedProducts';
 import TestimonialsSection from '../components/home/TestimonialsSection';
-import { getSettings, getFeaturedProducts } from '../lib/firestore';
+import { getSettings, getFeaturedProducts, getProducts } from '../lib/firestore';
 
 export const metadata: Metadata = {
   title: 'Sansi Eco Foods – Natural Dehydrated Fruit Snacks | Sri Lanka',
@@ -15,9 +15,14 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const settings = await getSettings();
-  const featuredProducts = settings?.featuredProductIds
+  let featuredProducts = settings?.featuredProductIds
     ? await getFeaturedProducts(settings.featuredProductIds)
     : [];
+
+  if (featuredProducts.length === 0) {
+    const allProducts = await getProducts();
+    featuredProducts = allProducts.slice(0, 4);
+  }
 
   return (
     <>

@@ -26,9 +26,30 @@ export default function Footer({
         <div className="row g-4">
           {/* Brand */}
           <div className="col-lg-4 col-md-6">
-            <h4 className="mb-3" style={{ fontFamily: 'Lora, serif', fontWeight: 700, color: '#fff' }}>
-              Sansi<span style={{ color: 'var(--secondary)' }}>Eco</span>Foods
-            </h4>
+            <div className="d-flex align-items-center mb-3">
+              <img
+                src="/images/sansi-logo.png"
+                alt="Sansi Eco Foods Logo"
+                style={{ height: '35px', marginRight: '10px' }}
+              />
+              <h4 className="m-0" style={{
+                fontFamily: 'var(--font-open-sans), sans-serif',
+                fontWeight: 800,
+                fontSize: '20px',
+                letterSpacing: '0.5px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}>
+                <span style={{ color: '#ff6a00' }}>SANSI</span>
+                <span style={{ color: '#00d26a' }}>ECO</span>
+                <span style={{
+                  background: 'linear-gradient(to right, #ff6a00, #00d26a)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}>FOODS</span>
+              </h4>
+            </div>
             <p className="mb-3" style={{ lineHeight: 1.8, fontSize: '14px' }}>
               Sri Lanka&apos;s premium dehydrated natural fruit snacks — handcrafted in Anamaduwa
               with 100% natural ingredients, zero chemicals, and zero preservatives.

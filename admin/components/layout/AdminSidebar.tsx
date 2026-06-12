@@ -34,11 +34,21 @@ export default function AdminSidebar({ pendingOrders = 0, userName }: AdminSideb
       <aside className="hidden lg:flex lg:flex-col fixed top-0 left-0 h-screen w-64 bg-white border-r border-gray-200 z-30 shadow-sm">
         {/* Logo */}
         <div className="flex items-center gap-2 px-6 py-5 border-b border-gray-100">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-content bg-green-700 text-white font-bold text-sm">
-            SEF
-          </div>
+          <img
+            src="/images/sansi-logo.png"
+            alt="Sansi Eco Foods Logo"
+            className="w-10 h-10 object-contain"
+          />
           <div>
-            <div className="font-bold text-gray-800 text-sm leading-tight">Sansi Eco Foods</div>
+            <div className="font-extrabold text-sm leading-tight tracking-wider" style={{ fontFamily: 'var(--font-open-sans), sans-serif' }}>
+              <span style={{ color: '#ff6a00' }}>SANSI</span>{' '}
+              <span style={{ color: '#00d26a' }}>ECO</span>{' '}
+              <span style={{
+                background: 'linear-gradient(to right, #ff6a00, #00d26a)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}>FOODS</span>
+            </div>
             <div className="text-xs text-gray-400">Admin Panel</div>
           </div>
         </div>

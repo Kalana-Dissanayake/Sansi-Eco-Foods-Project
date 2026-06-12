@@ -48,10 +48,22 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo Card */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/20 backdrop-blur mb-4">
-            <span className="text-2xl font-black text-white">SEF</span>
+          <div className="inline-flex items-center justify-center mb-4">
+            <img
+              src="/images/sansi-logo.png"
+              alt="Sansi Eco Foods Logo"
+              className="w-16 h-16 object-contain"
+            />
           </div>
-          <h1 className="text-3xl font-bold text-white">Sansi Eco Foods</h1>
+          <h1 className="text-3xl font-extrabold text-white tracking-wider" style={{ fontFamily: 'var(--font-open-sans), sans-serif' }}>
+            <span style={{ color: '#ff6a00' }}>SANSI</span>{' '}
+            <span style={{ color: '#00d26a' }}>ECO</span>{' '}
+            <span style={{
+              background: 'linear-gradient(to right, #ff6a00, #00d26a)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}>FOODS</span>
+          </h1>
           <p className="text-green-200 mt-1">Admin Dashboard</p>
         </div>
 

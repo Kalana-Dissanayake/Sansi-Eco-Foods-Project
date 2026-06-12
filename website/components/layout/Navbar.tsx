@@ -42,9 +42,28 @@ export default function Navbar() {
         zIndex: 1050,
       }}
     >
-      <Link href="/" className="navbar-brand">
-        <h1 className="m-0 text-primary" style={{ fontFamily: 'Lora, serif', fontWeight: 700, fontSize: '24px' }}>
-          Sansi<span style={{ color: 'var(--secondary)' }}>Eco</span>Foods
+      <Link href="/" className="navbar-brand d-flex align-items-center">
+        <img
+          src="/images/sansi-logo.png"
+          alt="Sansi Eco Foods Logo"
+          style={{ height: '40px', marginRight: '10px' }}
+        />
+        <h1 className="m-0" style={{
+          fontFamily: 'var(--font-open-sans), sans-serif',
+          fontWeight: 800,
+          fontSize: '22px',
+          letterSpacing: '0.5px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px'
+        }}>
+          <span style={{ color: '#ff6a00' }}>SANSI</span>
+          <span style={{ color: '#00d26a' }}>ECO</span>
+          <span style={{
+            background: 'linear-gradient(to right, #ff6a00, #00d26a)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}>FOODS</span>
         </h1>
       </Link>
 
