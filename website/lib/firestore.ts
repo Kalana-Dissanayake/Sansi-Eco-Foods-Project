@@ -248,7 +248,8 @@ export async function createOrder(
   cartItems: CartItem[],
   customerData: CustomerFormData,
   shippingLKR: number,
-  coupon: { code: string; discount: number } | null
+  coupon: { code: string; discount: number } | null,
+  customerId?: string | null
 ): Promise<{ success: boolean; orderId?: string; orderNumber?: string; error?: string }> {
   try {
     const orderNumber = await generateOrderNumber();
@@ -292,6 +293,7 @@ export async function createOrder(
       const orderRef = doc(collection(db, 'orders'));
       const orderData = {
         orderNumber,
+        customerId: customerId || null,
         customer: {
           name: customerData.name,
           phone: customerData.phone,
@@ -334,8 +336,8 @@ export async function createOrder(
       transaction.set(orderRef, orderData);
 
       // 4. Upsert customer document
-      const customerPhone = customerData.phone.replace(/\D/g, '');
-      const customerRef = doc(db, 'customers', customerPhone);
+      const customerDocId = customerId || customerData.phone.replace(/\D/g, '');
+      const customerRef = doc(db, 'customers', customerDocId);
       const customerSnap = await transaction.get(customerRef);
 
       if (customerSnap.exists()) {
@@ -358,17 +360,6 @@ export async function createOrder(
           notes: '',
           createdAt: serverTimestamp(),
         });
-      }
-
-      // 5. Increment coupon usage if applicable
-      if (coupon?.code) {
-        const couponQuery = query(
-          collection(db, 'coupons'),
-          where('code', '==', coupon.code.toUpperCase()),
-          limit(1)
-        );
-        // We can't run queries in transactions, so we use a separate update
-        // This is handled after the transaction
       }
 
       return orderRef.id;
@@ -396,5 +387,135 @@ export async function createOrder(
     const message = error instanceof Error ? error.message : 'Failed to place order.';
     console.error('Error creating order:', error);
     return { success: false, error: message };
+  }
+}
+
+// ─── Customer Helpers ────────────────────────────────────────────────────────
+
+export async function getCustomerProfile(uid: string): Promise<Customer | null> {
+  try {
+    const snap = await getDoc(doc(db, 'customers', uid));
+    if (!snap.exists()) return null;
+    return { id: snap.id, ...snap.data() } as Customer;
+  } catch (error) {
+    console.error('Error fetching customer profile:', error);
+    return null;
+  }
+}
+
+export async function createCustomerProfile(
+  uid: string,
+  data: { name: string; phone: string; email: string; address: DeliveryAddress }
+): Promise<void> {
+  try {
+    await setDoc(doc(db, 'customers', uid), {
+      name: data.name,
+      phone: data.phone,
+      email: data.email,
+      addresses: [data.address],
+      totalOrders: 0,
+      totalSpentLKR: 0,
+      firstOrderAt: null,
+      lastOrderAt: null,
+      lastDeliveryAddress: data.address,
+      notes: '',
+      createdAt: serverTimestamp(),
+    });
+  } catch (error) {
+    console.error('Error creating customer profile:', error);
+    throw error;
+  }
+}
+
+export async function updateCustomerProfile(
+  uid: string,
+  data: { name: string; phone: string; email: string; address: DeliveryAddress }
+): Promise<void> {
+  try {
+    await updateDoc(doc(db, 'customers', uid), {
+      name: data.name,
+      phone: data.phone,
+      email: data.email,
+      addresses: [data.address],
+      lastDeliveryAddress: data.address,
+      updatedAt: serverTimestamp(),
+    });
+  } catch (error) {
+    console.error('Error updating customer profile:', error);
+    throw error;
+  }
+}
+
+export async function getCustomerOrdersByUid(uid: string): Promise<Order[]> {
+  try {
+    const q = query(
+      collection(db, 'orders'),
+      where('customerId', '==', uid),
+      orderBy('createdAt', 'desc')
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Order));
+  } catch (error) {
+    console.error('Error fetching customer orders:', error);
+    return [];
+  }
+}
+
+export async function cancelOrder(
+  orderId: string,
+  cancellationReason: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const orderRef = doc(db, 'orders', orderId);
+
+    await runTransaction(db, async (transaction) => {
+      const orderSnap = await transaction.get(orderRef);
+      if (!orderSnap.exists()) {
+        throw new Error('Order does not exist.');
+      }
+
+      const order = orderSnap.data() as Order;
+      if (order.orderStatus !== 'Pending') {
+        throw new Error('Only pending orders can be cancelled.');
+      }
+
+      // Update order document status and statusHistory
+      const newHistoryEntry = {
+        status: 'Cancelled',
+        changedAt: Timestamp.now(),
+        changedByUid: order.customerId || 'customer',
+        note: cancellationReason || 'Order cancelled by customer',
+      };
+
+      transaction.update(orderRef, {
+        orderStatus: 'Cancelled',
+        cancellationReason: cancellationReason || 'Cancelled by customer',
+        statusHistory: [...(order.statusHistory || []), newHistoryEntry],
+        updatedAt: serverTimestamp(),
+      });
+
+      // Restore stock for all items
+      for (const item of order.items) {
+        const productRef = doc(db, 'products', item.productId);
+        const productSnap = await transaction.get(productRef);
+        if (productSnap.exists()) {
+          const product = productSnap.data() as Product;
+          const newQty = product.stockQuantity + item.quantity;
+          transaction.update(productRef, {
+            stockQuantity: newQty,
+            inStock: true,
+            updatedAt: serverTimestamp(),
+          });
+        }
+      }
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error cancelling order:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to cancel order.',
+    };
   }
 }

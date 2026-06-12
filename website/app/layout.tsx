@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Lora, Open_Sans } from 'next/font/google';
 import Script from 'next/script';
 import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from '../context/AuthContext';
 import { CartProvider } from '../context/CartContext';
 import AnnouncementBar from '../components/layout/AnnouncementBar';
 import TopBar from '../components/layout/TopBar';
@@ -124,41 +125,43 @@ export default async function RootLayout({
           `}</Script>
         )}
 
-        <CartProvider>
-          <AnnouncementBar
-            enabled={settings.announcementBarEnabled}
-            text={settings.announcementBarText}
-          />
-          <TopBar
-            address={settings.businessAddress}
-            email={settings.contactEmail}
-            facebookUrl={settings.facebookUrl}
-            instagramUrl={settings.instagramUrl}
-            tiktokUrl={settings.tiktokUrl}
-          />
-          <Navbar />
-          <main>{children}</main>
-          <Footer
-            phone={settings.whatsappNumber}
-            email={settings.contactEmail}
-            address={settings.businessAddress}
-            whatsappNumber={settings.whatsappNumber}
-            facebookUrl={settings.facebookUrl}
-            instagramUrl={settings.instagramUrl}
-            tiktokUrl={settings.tiktokUrl}
-          />
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                borderRadius: '8px',
-                fontSize: '14px',
-              },
-              success: { iconTheme: { primary: '#4a7c59', secondary: '#fff' } },
-            }}
-          />
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <AnnouncementBar
+              enabled={settings.announcementBarEnabled}
+              text={settings.announcementBarText}
+            />
+            <TopBar
+              address={settings.businessAddress}
+              email={settings.contactEmail}
+              facebookUrl={settings.facebookUrl}
+              instagramUrl={settings.instagramUrl}
+              tiktokUrl={settings.tiktokUrl}
+            />
+            <Navbar />
+            <main>{children}</main>
+            <Footer
+              phone={settings.whatsappNumber}
+              email={settings.contactEmail}
+              address={settings.businessAddress}
+              whatsappNumber={settings.whatsappNumber}
+              facebookUrl={settings.facebookUrl}
+              instagramUrl={settings.instagramUrl}
+              tiktokUrl={settings.tiktokUrl}
+            />
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                },
+                success: { iconTheme: { primary: '#4a7c59', secondary: '#fff' } },
+              }}
+            />
+          </CartProvider>
+        </AuthProvider>
 
         {/* Bootstrap 5 JS */}
         <Script

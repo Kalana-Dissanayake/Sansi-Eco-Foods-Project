@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Navbar() {
   const pathname = usePathname();
   const { itemCount } = useCart();
+  const { user } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [cartBump, setCartBump] = useState(false);
 
@@ -31,6 +33,19 @@ export default function Navbar() {
     if (href === '/') return pathname === '/';
     return pathname.startsWith(href);
   };
+
+  const navLinks = [
+    { href: '/', label: 'Home' },
+    { href: '/about', label: 'About Us' },
+    { href: '/products', label: 'Products' },
+    { href: '/contact', label: 'Contact Us' },
+  ];
+
+  if (user) {
+    navLinks.push({ href: '/dashboard', label: 'Dashboard' });
+  } else {
+    navLinks.push({ href: '/login', label: 'Sign In' });
+  }
 
   return (
     <nav
@@ -81,12 +96,7 @@ export default function Navbar() {
 
       <div className="collapse navbar-collapse" id="navbarCollapse">
         <ul className="navbar-nav ms-auto py-0">
-          {[
-            { href: '/', label: 'Home' },
-            { href: '/about', label: 'About Us' },
-            { href: '/products', label: 'Products' },
-            { href: '/contact', label: 'Contact Us' },
-          ].map(({ href, label }) => (
+          {navLinks.map(({ href, label }) => (
             <li key={href} className="nav-item">
               <Link
                 href={href}

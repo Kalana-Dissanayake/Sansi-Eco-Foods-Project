@@ -6,6 +6,7 @@ service cloud.firestore {
     match /products/{id} {
       allow read: if true;
       allow write: if isAdmin();
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stockQuantity', 'inStock', 'updatedAt']);
     }
     match /categories/{id} {
       allow read: if true;
@@ -20,10 +21,10 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Orders: anyone can create, only admin/staff can read all
+    // Orders: anyone can create, only admin/staff or the customer who placed it can read/update
     match /orders/{id} {
       allow create: if true;
-      allow read, update: if isAdmin() || isStaff();
+      allow read, update: if isAdmin() || isStaff() || (request.auth != null && resource.data.customerId == request.auth.uid);
       allow delete: if isAdmin();
     }
 
@@ -33,9 +34,9 @@ service cloud.firestore {
       allow write: if true; // Protected by transaction logic
     }
 
-    // Customers: admin only
+    // Customers: admin or the customer themselves
     match /customers/{id} {
-      allow read, write: if isAdmin();
+      allow read, write: if isAdmin() || (request.auth != null && request.auth.uid == id);
     }
 
     // Contact messages: anyone can create, admin can read/update

@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DISTRICT_PROVINCE_MAP } from '../../../shared/types';
 import type { CustomerFormData } from '../../../shared/types';
 
 interface CheckoutFormProps {
   onSubmit: (data: CustomerFormData) => void;
   isSubmitting: boolean;
+  initialValues?: CustomerFormData | null;
 }
 
 type FormErrors = Partial<Record<keyof CustomerFormData | 'line1' | 'city' | 'district', string>>;
@@ -15,7 +16,7 @@ const DISTRICTS = Object.keys(DISTRICT_PROVINCE_MAP).sort();
 
 const SRI_LANKA_PHONE_REGEX = /^0[1-9][0-9]{8}$/;
 
-export default function CheckoutForm({ onSubmit, isSubmitting }: CheckoutFormProps) {
+export default function CheckoutForm({ onSubmit, isSubmitting, initialValues = null }: CheckoutFormProps) {
   const [form, setForm] = useState<CustomerFormData>({
     name: '',
     phone: '',
@@ -23,6 +24,23 @@ export default function CheckoutForm({ onSubmit, isSubmitting }: CheckoutFormPro
     deliveryAddress: { line1: '', city: '', district: '', province: '' },
     orderNotes: '',
   });
+
+  useEffect(() => {
+    if (initialValues) {
+      setForm({
+        name: initialValues.name || '',
+        phone: initialValues.phone || '',
+        email: initialValues.email || '',
+        deliveryAddress: {
+          line1: initialValues.deliveryAddress?.line1 || '',
+          city: initialValues.deliveryAddress?.city || '',
+          district: initialValues.deliveryAddress?.district || '',
+          province: initialValues.deliveryAddress?.province || '',
+        },
+        orderNotes: initialValues.orderNotes || '',
+      });
+    }
+  }, [initialValues]);
   const [errors, setErrors] = useState<FormErrors>({});
 
   const updateField = (field: keyof CustomerFormData, value: string) => {

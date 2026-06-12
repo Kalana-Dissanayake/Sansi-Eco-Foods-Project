@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 import CheckoutForm from '../../components/checkout/CheckoutForm';
 import PaymentMethodSelector from '../../components/checkout/PaymentMethodSelector';
 import Spinner from '../../components/ui/Spinner';
@@ -34,10 +35,32 @@ const DEFAULT_SETTINGS: SiteSettings = {
 
 export default function CheckoutPage() {
   const { items, itemCount, subtotalLKR, clearCart } = useCart();
+  const { user, customer, loading: authLoading } = useAuth();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customerData, setCustomerData] = useState<CustomerFormData | null>(null);
   const [coupon] = useState<{ code: string; discount: number } | null>(null);
+
+  // Prefill customerData on load when customer profile is available
+  useEffect(() => {
+    if (customer && user) {
+      setCustomerData({
+        name: customer.name || '',
+        phone: customer.phone || '',
+        email: customer.email || user.email || '',
+        deliveryAddress: customer.lastDeliveryAddress || { line1: '', city: '', district: '', province: '' },
+        orderNotes: '',
+      });
+    } else if (user && !customer) {
+      setCustomerData({
+        name: '',
+        phone: '',
+        email: user.email || '',
+        deliveryAddress: { line1: '', city: '', district: '', province: '' },
+        orderNotes: '',
+      });
+    }
+  }, [customer, user]);
 
   const getShipping = (district?: string): number => {
     if (!district) return DEFAULT_SETTINGS.shippingRates.outstation;
@@ -55,7 +78,13 @@ export default function CheckoutPage() {
   };
 
   const handlePlaceOrder = async () => {
-    if (!customerData) {
+    if (!user) {
+      toast.error('You must be signed in to place an order.');
+      router.push('/login?redirect=/checkout');
+      return;
+    }
+
+    if (!customerData || !customerData.name.trim() || !customerData.phone.trim() || !customerData.deliveryAddress.line1.trim() || !customerData.deliveryAddress.city.trim() || !customerData.deliveryAddress.district) {
       // Trigger form submission
       const btn = document.getElementById('checkout-submit-btn') as HTMLInputElement;
       btn?.click();
@@ -65,7 +94,7 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
     try {
       const settings = (await getSettings()) ?? DEFAULT_SETTINGS;
-      const result = await placeOrder(items, customerData, coupon, 'COD', settings);
+      const result = await placeOrder(items, customerData, coupon, 'COD', settings, user.uid);
 
       if (result.success && result.orderId) {
         clearCart();
@@ -80,6 +109,43 @@ export default function CheckoutPage() {
       setIsSubmitting(false);
     }
   };
+
+  if (authLoading) {
+    return (
+      <section className="section-padding">
+        <div className="container text-center py-5">
+          <Spinner size="lg" />
+          <p className="mt-3 text-muted">Checking authentication status...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (!user) {
+    return (
+      <section className="section-padding" style={{ background: '#f8f9fa', minHeight: '60vh' }}>
+        <div className="container text-center py-5">
+          <div className="card border-0 shadow-sm rounded-3 p-5 mx-auto" style={{ maxWidth: '480px' }}>
+            <div className="mb-3 text-primary">
+              <i className="fas fa-user-lock fa-3x"></i>
+            </div>
+            <h3 style={{ fontWeight: 700, color: 'var(--dark)' }}>Sign In Required</h3>
+            <p className="text-muted mb-4">
+              To complete your order at Sansi Eco Foods, please sign in or register a new customer account.
+            </p>
+            <div className="d-flex flex-column gap-2">
+              <Link href="/login?redirect=/checkout" className="btn btn-primary rounded-pill py-2.5" style={{ fontWeight: 700 }}>
+                Sign In to Account
+              </Link>
+              <Link href="/signup?redirect=/checkout" className="btn btn-outline-primary rounded-pill py-2.5" style={{ fontWeight: 700 }}>
+                Create New Account
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (itemCount === 0) {
     return (
@@ -110,7 +176,7 @@ export default function CheckoutPage() {
         <div className="row g-5">
           {/* Left Column: Form */}
           <div className="col-lg-7">
-            <CheckoutForm onSubmit={handleFormSubmit} isSubmitting={isSubmitting} />
+            <CheckoutForm onSubmit={handleFormSubmit} isSubmitting={isSubmitting} initialValues={customerData} />
           </div>
 
           {/* Right Column: Order Summary + Payment */}

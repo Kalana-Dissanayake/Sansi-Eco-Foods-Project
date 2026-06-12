@@ -22,7 +22,8 @@ export async function placeOrder(
   customerData: CustomerFormData,
   coupon: { code: string; discount: number } | null,
   paymentMethod: 'COD',
-  settings: SiteSettings
+  settings: SiteSettings,
+  customerId?: string | null
 ): Promise<PlaceOrderResult> {
   if (paymentMethod !== 'COD') {
     return { success: false, error: 'Selected payment method is not yet supported.' };
@@ -37,7 +38,7 @@ export async function placeOrder(
   );
 
   // Run the Firestore transaction (stock decrement + order creation)
-  const result = await createOrder(cartItems, customerData, shippingLKR, coupon);
+  const result = await createOrder(cartItems, customerData, shippingLKR, coupon, customerId);
 
   if (!result.success) {
     return result;
