@@ -42,12 +42,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
       if (firebaseUser) {
         // Fetch customer profile details
         const profile = await getCustomerProfile(firebaseUser.uid);
-        setCustomer(profile);
+        if (profile) {
+          setUser(firebaseUser);
+          setCustomer(profile);
+        } else {
+          // If no customer profile exists in /customers (e.g., they logged in with admin credentials),
+          // treat them as logged out on the storefront.
+          setUser(null);
+          setCustomer(null);
+        }
       } else {
+        setUser(null);
         setCustomer(null);
       }
       setLoading(false);
@@ -58,7 +66,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const credential = await signInWithEmailAndPassword(auth, email, password);
+      // Fetch customer profile details to verify they are a registered customer
+      const profile = await getCustomerProfile(credential.user.uid);
+      if (!profile) {
+        // Sign out if they are not in the /customers collection (e.g. admin accounts)
+        await firebaseSignOut(auth);
+        return {
+          success: false,
+          error: 'Access denied. Admin accounts cannot log in as customers on the storefront.',
+        };
+      }
       return { success: true };
     } catch (error: any) {
       console.error('Sign-in error:', error);
