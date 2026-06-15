@@ -49,8 +49,8 @@ export default function OrdersPage() {
   const pendingCount = orders.filter((o) => o.orderStatus === 'Pending').length;
 
   return (
-    <AdminLayout title="Orders" pendingOrders={pendingCount}>
-      <div className="space-y-4">
+    <AdminLayout title="Orders" pendingOrders={pendingCount} requiredPermission="orders_view">
+      <div className="space-y-4 font-sans">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h2 className="text-2xl font-bold text-gray-800">Order Management</h2>

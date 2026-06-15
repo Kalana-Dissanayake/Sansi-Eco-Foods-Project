@@ -5,27 +5,27 @@ service cloud.firestore {
     // Public read for products, categories, settings, coupons
     match /products/{id} {
       allow read: if true;
-      allow write: if isAdmin();
-      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stockQuantity', 'inStock', 'updatedAt']);
+      allow write: if hasPermission('menu_edit') || isSuperAdmin();
+      allow update: if hasPermission('menu_toggle_stock') || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stockQuantity', 'inStock', 'updatedAt']);
     }
     match /categories/{id} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if hasPermission('menu_edit') || isSuperAdmin();
     }
     match /settings/{id} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if hasPermission('settings_manage') || isSuperAdmin();
     }
     match /coupons/{id} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if hasPermission('coupons_manage') || isSuperAdmin();
     }
 
-    // Orders: anyone can create, only admin/staff or the customer who placed it can read/update
+    // Orders: anyone can create, admin/staff or the customer who placed it can read/update
     match /orders/{id} {
       allow create: if true;
-      allow read, update: if isAdmin() || isStaff() || (request.auth != null && resource.data.customerId == request.auth.uid);
-      allow delete: if isAdmin();
+      allow read, update: if hasPermission('orders_view') || hasPermission('orders_delivery_queue') || isSuperAdmin() || (request.auth != null && resource.data.customerId == request.auth.uid);
+      allow delete: if isSuperAdmin();
     }
 
     // Counters: needed for sequential order numbering
@@ -36,35 +36,49 @@ service cloud.firestore {
 
     // Customers: admin or the customer themselves
     match /customers/{id} {
-      allow read, write: if isAdmin() || (request.auth != null && request.auth.uid == id);
+      allow read, write: if hasPermission('customers_view') || isSuperAdmin() || (request.auth != null && request.auth.uid == id);
     }
 
     // Contact messages: anyone can create, admin can read/update
     match /contact_messages/{id} {
       allow create: if true;
-      allow read, update, delete: if isAdmin();
+      allow read, update, delete: if hasPermission('settings_manage') || isSuperAdmin();
     }
 
-    // Admin users: super_admin only
+    // Admin users
     match /users/{id} {
-      allow read, write: if isSuperAdmin();
-      // Allow users to read their own document (for role check)
+      allow read, write: if hasPermission('staff_manage') || isSuperAdmin();
       allow read: if request.auth != null && request.auth.uid == id;
     }
 
-    function isAdmin() {
-      return request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['super_admin', 'staff'];
+    // Roles collection
+    match /roles/{id} {
+      allow read: if request.auth != null;
+      allow write: if hasPermission('staff_manage') || isSuperAdmin();
     }
 
+    // Helper functions for RBAC
     function isSuperAdmin() {
       return request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin';
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roleId == 'super_admin' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin'
+        );
     }
 
-    function isStaff() {
+    function hasPermission(permissionName) {
       return request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'staff';
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isActive == true &&
+        (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roleId == 'super_admin' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin' ||
+          (
+            exists(/databases/$(database)/documents/roles/$(get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roleId)) &&
+            get(/databases/$(database)/documents/roles/$(get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roleId)).data.permissions[permissionName] == true
+          )
+        );
     }
   }
 }

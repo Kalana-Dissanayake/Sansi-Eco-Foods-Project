@@ -3,20 +3,21 @@
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../lib/firebase';
-import { getUserRole, getAdminUser } from '../lib/auth';
+import { getAdminUser, getUserRoleDetails } from '../lib/auth';
 import type { User } from 'firebase/auth';
-import type { AdminUser, AdminRole } from '../../shared/types';
+import type { AdminUser, Role, RolePermissions } from '../../shared/types';
 
 interface AuthState {
   user: User | null;
   adminUser: AdminUser | null;
-  role: AdminRole | null;
+  role: Role | null;
   loading: boolean;
   isAuthenticated: boolean;
+  hasPermission: (permissionName: keyof RolePermissions) => boolean;
 }
 
 export function useAuth(): AuthState {
-  const [state, setState] = useState<AuthState>({
+  const [state, setState] = useState<Omit<AuthState, 'hasPermission'>>({
     user: null,
     adminUser: null,
     role: null,
@@ -27,18 +28,29 @@ export function useAuth(): AuthState {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const [role, adminUser] = await Promise.all([
-          getUserRole(user.uid),
-          getAdminUser(user.uid),
-        ]);
+        try {
+          const [role, adminUser] = await Promise.all([
+            getUserRoleDetails(user.uid),
+            getAdminUser(user.uid),
+          ]);
 
-        setState({
-          user,
-          adminUser,
-          role,
-          loading: false,
-          isAuthenticated: !!role,
-        });
+          setState({
+            user,
+            adminUser,
+            role,
+            loading: false,
+            isAuthenticated: !!role,
+          });
+        } catch (err) {
+          console.error('Error loading auth role details:', err);
+          setState({
+            user,
+            adminUser: null,
+            role: null,
+            loading: false,
+            isAuthenticated: false,
+          });
+        }
       } else {
         setState({
           user: null,
@@ -53,6 +65,15 @@ export function useAuth(): AuthState {
     return unsubscribe;
   }, []);
 
-  return state;
+  const hasPermission = (permissionName: keyof RolePermissions): boolean => {
+    if (!state.role) return false;
+    if (state.role.id === 'super_admin') return true;
+    return !!state.role.permissions?.[permissionName];
+  };
+
+  return {
+    ...state,
+    hasPermission,
+  };
 }
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import AdminLayout from '../../components/layout/AdminLayout';
+import { useAuth } from '../../hooks/useAuth';
 import { getSettings, updateSettings } from '../../lib/firestore';
 import type { SiteSettings } from '../../../shared/types';
 
@@ -81,7 +82,7 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <AdminLayout title="Settings">
+      <AdminLayout title="Settings" requiredPermission="settings_manage">
         <div className="flex items-center justify-center py-24">
           <div className="w-10 h-10 border-4 border-green-700 border-t-transparent rounded-full animate-spin"></div>
         </div>
@@ -90,8 +91,8 @@ export default function SettingsPage() {
   }
 
   return (
-    <AdminLayout title="Settings">
-      <div className="max-w-3xl">
+    <AdminLayout title="Settings" requiredPermission="settings_manage">
+      <div className="max-w-3xl font-sans">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Site Settings</h2>
           <button

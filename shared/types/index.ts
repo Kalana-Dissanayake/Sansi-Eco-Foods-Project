@@ -97,6 +97,8 @@ export interface Order {
   trackingNumber: string | null;
   statusHistory: StatusHistoryEntry[];
   emailSent: boolean;
+  driverId?: string | null;
+  driverName?: string | null;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -169,15 +171,50 @@ export interface Coupon {
   isActive: boolean;
 }
 
-// ─── Admin User ───────────────────────────────────────────────────────────────
+// ─── Admin User & RBAC ────────────────────────────────────────────────────────
 
-export type AdminRole = 'super_admin' | 'staff';
+export interface RolePermissions {
+  // Dashboard
+  dashboard_view: boolean;
+  dashboard_export_analytics: boolean;
+  // Orders
+  orders_view: boolean;
+  orders_edit: boolean;
+  orders_update_status: boolean;
+  orders_refund: boolean;
+  orders_delivery_queue: boolean;
+  // Products & Categories
+  menu_view: boolean;
+  menu_edit: boolean;
+  menu_toggle_stock: boolean;
+  // Customers
+  customers_view: boolean;
+  customers_edit: boolean;
+  // Coupons
+  coupons_manage: boolean;
+  // Settings
+  settings_manage: boolean;
+  // Staff & Roles
+  staff_manage: boolean;
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  description: string;
+  permissions: RolePermissions;
+  isActive: boolean;
+  isSystem: boolean;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
 
 export interface AdminUser {
   uid: string;
   email: string;
   displayName: string;
-  role: AdminRole;
+  roleId: string;
+  role?: string; // Legacy fallback
   isActive: boolean;
   createdAt: Timestamp;
 }

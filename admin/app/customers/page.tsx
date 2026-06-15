@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import AdminLayout from '../../components/layout/AdminLayout';
+import { useAuth } from '../../hooks/useAuth';
 import { getCustomers, updateCustomerNotes } from '../../lib/firestore';
 import type { Customer } from '../../../shared/types';
 
@@ -13,6 +14,7 @@ function formatDate(ts: { toDate(): Date } | null): string {
 }
 
 export default function CustomersPage() {
+  const { hasPermission } = useAuth();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,7 +25,7 @@ export default function CustomersPage() {
   }, []);
 
   const handleSaveNotes = async (customerId: string) => {
-    if (!editingNotes) return;
+    if (!editingNotes || !hasPermission('customers_edit')) return;
     try {
       await updateCustomerNotes(customerId, editingNotes.notes);
       setCustomers((prev) => prev.map((c) => c.id === customerId ? { ...c, notes: editingNotes.notes } : c));
@@ -43,8 +45,8 @@ export default function CustomersPage() {
     : customers;
 
   return (
-    <AdminLayout title="Customers">
-      <div className="space-y-4">
+    <AdminLayout title="Customers" requiredPermission="customers_view">
+      <div className="space-y-4 font-sans">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h2 className="text-2xl font-bold text-gray-800">Customers</h2>
           <div className="flex items-center gap-3">
@@ -124,10 +126,11 @@ export default function CustomersPage() {
                           </div>
                         ) : (
                           <button
+                            disabled={!hasPermission('customers_edit')}
                             onClick={() => setEditingNotes({ id: customer.id, notes: customer.notes ?? '' })}
-                            className="text-gray-400 hover:text-gray-600 text-xs max-w-xs text-left truncate"
+                            className={`text-gray-400 text-xs max-w-xs text-left truncate ${hasPermission('customers_edit') ? 'hover:text-gray-600' : 'cursor-default'}`}
                           >
-                            {customer.notes ? customer.notes : '+ Add note'}
+                            {customer.notes ? customer.notes : hasPermission('customers_edit') ? '+ Add note' : 'No notes'}
                           </button>
                         )}
                       </td>

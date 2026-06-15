@@ -26,7 +26,7 @@ function formatDate(ts: { toDate(): Date } | null): string {
 export default function OrderDetailPage() {
   const params = useParams<{ orderId: string }>();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, hasPermission } = useAuth();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [newStatus, setNewStatus] = useState<OrderStatus>('Pending');
@@ -50,6 +50,11 @@ export default function OrderDetailPage() {
     if (!order || !user) return;
     if (newStatus === order.orderStatus) {
       toast.error('Status is the same. No change needed.');
+      return;
+    }
+
+    if (newStatus === 'Cancelled' && !hasPermission('orders_refund')) {
+      toast.error('You do not have permission to cancel orders or process refunds.');
       return;
     }
 
@@ -100,13 +105,13 @@ export default function OrderDetailPage() {
   return (
     <AdminLayout title={`Order ${order.orderNumber}`}>
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
+      <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6 font-sans">
         <Link href="/orders" className="hover:text-gray-700">Orders</Link>
         <span>/</span>
         <span className="text-gray-800 font-medium">{order.orderNumber}</span>
       </nav>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 font-sans">
         {/* Left: Customer + Items */}
         <div className="xl:col-span-2 space-y-6">
           {/* Order Summary Card */}
@@ -219,43 +224,45 @@ export default function OrderDetailPage() {
         {/* Right: Status + Timeline */}
         <div className="space-y-6">
           {/* Update Status */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h3 className="font-bold text-gray-800 mb-4">Update Status</h3>
-            <select
-              value={newStatus}
-              onChange={(e) => setNewStatus(e.target.value as OrderStatus)}
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              {ORDER_STATUSES.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-            <textarea
-              value={statusNote}
-              onChange={(e) => setStatusNote(e.target.value)}
-              placeholder="Add a note (optional)..."
-              className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
-              rows={2}
-            />
-            {newStatus === 'Cancelled' && (
+          {hasPermission('orders_update_status') && (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+              <h3 className="font-bold text-gray-800 mb-4">Update Status</h3>
+              <select
+                value={newStatus}
+                onChange={(e) => setNewStatus(e.target.value as OrderStatus)}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+              >
+                {ORDER_STATUSES.map((s) => (
+                  <option key={s} value={s} disabled={s === 'Cancelled' && !hasPermission('orders_refund')}>{s}</option>
+                ))}
+              </select>
               <textarea
-                value={cancellationReason}
-                onChange={(e) => setCancellationReason(e.target.value)}
-                placeholder="Cancellation reason (required)..."
-                className="w-full px-3 py-2 border border-red-200 rounded-xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
+                value={statusNote}
+                onChange={(e) => setStatusNote(e.target.value)}
+                placeholder="Add a note (optional)..."
+                className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-green-500 resize-none font-sans"
                 rows={2}
               />
-            )}
-            <button
-              onClick={handleUpdateStatus}
-              disabled={updating}
-              className="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-2.5 rounded-xl transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-            >
-              {updating ? (
-                <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>Updating...</>
-              ) : 'Update Status'}
-            </button>
-          </div>
+              {newStatus === 'Cancelled' && (
+                <textarea
+                  value={cancellationReason}
+                  onChange={(e) => setCancellationReason(e.target.value)}
+                  placeholder="Cancellation reason (required)..."
+                  className="w-full px-3 py-2 border border-red-200 rounded-xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 resize-none font-sans"
+                  rows={2}
+                />
+              )}
+              <button
+                onClick={handleUpdateStatus}
+                disabled={updating}
+                className="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-2.5 rounded-xl transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+              >
+                {updating ? (
+                  <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>Updating...</>
+                ) : 'Update Status'}
+              </button>
+            </div>
+          )}
 
           {/* Status Timeline */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
@@ -285,22 +292,25 @@ export default function OrderDetailPage() {
             <div className="flex gap-2">
               <input
                 type="text"
+                disabled={!hasPermission('orders_edit')}
                 defaultValue={order.trackingNumber ?? ''}
                 placeholder="Enter tracking #"
                 id={`tracking-${order.id}`}
-                className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-50 disabled:text-gray-400"
               />
-              <button
-                onClick={async () => {
-                  const input = document.getElementById(`tracking-${order.id}`) as HTMLInputElement;
-                  const { updateOrderTracking } = await import('../../../lib/firestore');
-                  await updateOrderTracking(order.id, input.value);
-                  toast.success('Tracking number saved');
-                }}
-                className="px-3 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-xl text-sm font-medium transition-colors"
-              >
-                Save
-              </button>
+              {hasPermission('orders_edit') && (
+                <button
+                  onClick={async () => {
+                    const input = document.getElementById(`tracking-${order.id}`) as HTMLInputElement;
+                    const { updateOrderTracking } = await import('../../../lib/firestore');
+                    await updateOrderTracking(order.id, input.value);
+                    toast.success('Tracking number saved');
+                  }}
+                  className="px-3 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-xl text-sm font-medium transition-colors"
+                >
+                  Save
+                </button>
+              )}
             </div>
           </div>
         </div>

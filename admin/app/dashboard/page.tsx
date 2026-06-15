@@ -5,6 +5,7 @@ import Link from 'next/link';
 import AdminLayout from '../../components/layout/AdminLayout';
 import StatCard from '../../components/dashboard/StatCard';
 import RecentOrders from '../../components/dashboard/RecentOrders';
+import { useAuth } from '../../hooks/useAuth';
 import {
   getDashboardStats,
   getRecentOrders,
@@ -14,6 +15,7 @@ import {
 import type { Order, Product } from '../../../shared/types';
 
 export default function DashboardPage() {
+  const { hasPermission } = useAuth();
   const [stats, setStats] = useState({ ordersToday: 0, ordersThisMonth: 0, revenueThisMonth: 0, pendingOrders: 0 });
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [lowStockProducts, setLowStockProducts] = useState<Product[]>([]);
@@ -38,7 +40,7 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <AdminLayout title="Dashboard" pendingOrders={stats.pendingOrders}>
+    <AdminLayout title="Dashboard" pendingOrders={stats.pendingOrders} requiredPermission="dashboard_view">
       {loading ? (
         <div className="flex items-center justify-center py-24">
           <div className="w-10 h-10 border-4 border-green-700 border-t-transparent rounded-full animate-spin"></div>
@@ -46,7 +48,7 @@ export default function DashboardPage() {
       ) : (
         <div className="space-y-6">
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 font-sans">
             <StatCard
               label="Orders Today"
               value={stats.ordersToday}
@@ -59,12 +61,14 @@ export default function DashboardPage() {
               icon="📦"
               color="purple"
             />
-            <StatCard
-              label="Revenue This Month"
-              value={`Rs. ${stats.revenueThisMonth.toLocaleString()}`}
-              icon="💰"
-              color="green"
-            />
+            {hasPermission('dashboard_export_analytics') && (
+              <StatCard
+                label="Revenue This Month"
+                value={`Rs. ${stats.revenueThisMonth.toLocaleString()}`}
+                icon="💰"
+                color="green"
+              />
+            )}
             <StatCard
               label="Pending Orders"
               value={stats.pendingOrders}

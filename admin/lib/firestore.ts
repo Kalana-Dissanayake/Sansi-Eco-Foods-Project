@@ -16,6 +16,7 @@ import {
   runTransaction,
   increment,
   writeBatch,
+  arrayUnion,
 } from 'firebase/firestore';
 
 import { db } from './firebase';
@@ -29,6 +30,8 @@ import type {
   Coupon,
   AdminUser,
   StatusHistoryEntry,
+  Role,
+  RolePermissions,
 } from '../../shared/types';
 
 // ─── Dashboard ─────────────────────────────────────────────────────────────────
@@ -304,6 +307,40 @@ export async function getAdminUsers(): Promise<AdminUser[]> {
   return snap.docs.map((d) => d.data() as AdminUser);
 }
 
+export async function getRoles(): Promise<Role[]> {
+  const snap = await getDocs(collection(db, 'roles'));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Role));
+}
+
+export async function saveRole(roleId: string, roleData: Omit<Role, 'id' | 'createdAt' | 'updatedAt'>): Promise<void> {
+  const roleRef = doc(db, 'roles', roleId);
+  const snap = await getDoc(roleRef);
+  if (snap.exists()) {
+    await updateDoc(roleRef, {
+      ...roleData,
+      updatedAt: serverTimestamp(),
+    });
+  } else {
+    await setDoc(roleRef, {
+      ...roleData,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+  }
+}
+
+export async function saveStaffUser(uid: string, data: { email: string; displayName: string; roleId: string; isActive: boolean }): Promise<void> {
+  await setDoc(doc(db, 'users', uid), {
+    ...data,
+    uid,
+    createdAt: serverTimestamp(),
+  });
+}
+
+export async function updateStaffUser(uid: string, data: Partial<AdminUser>): Promise<void> {
+  await updateDoc(doc(db, 'users', uid), data);
+}
+
 export async function seedInitialData(): Promise<void> {
   // Check if already seeded
   const existingProducts = await getDocs(query(collection(db, 'products'), limit(1)));
@@ -376,4 +413,48 @@ export async function seedInitialData(): Promise<void> {
   });
 
   await batch.commit();
+}
+
+// ─── Delivery Driver ──────────────────────────────────────────────────────────
+
+export async function claimOrderDelivery(
+  orderId: string,
+  driverId: string,
+  driverName: string
+): Promise<void> {
+  const orderRef = doc(db, 'orders', orderId);
+  const historyEntry = {
+    status: 'Dispatched',
+    changedAt: Timestamp.now(),
+    changedByUid: driverId,
+    note: `Order assigned to driver: ${driverName}`,
+  };
+
+  await updateDoc(orderRef, {
+    driverId,
+    driverName,
+    orderStatus: 'Dispatched',
+    updatedAt: serverTimestamp(),
+    statusHistory: arrayUnion(historyEntry),
+  });
+}
+
+export async function markOrderDelivered(
+  orderId: string,
+  driverId: string
+): Promise<void> {
+  const orderRef = doc(db, 'orders', orderId);
+  const historyEntry = {
+    status: 'Delivered',
+    changedAt: Timestamp.now(),
+    changedByUid: driverId,
+    note: 'Delivered by driver',
+  };
+
+  await updateDoc(orderRef, {
+    orderStatus: 'Delivered',
+    paymentStatus: 'Paid', // Typically cash on delivery orders are now collected
+    updatedAt: serverTimestamp(),
+    statusHistory: arrayUnion(historyEntry),
+  });
 }

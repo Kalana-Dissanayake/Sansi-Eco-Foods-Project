@@ -5,10 +5,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import AdminLayout from '../../components/layout/AdminLayout';
+import { useAuth } from '../../hooks/useAuth';
 import { getAllProducts, updateProductStock, updateProduct, deleteProduct } from '../../lib/firestore';
 import type { Product } from '../../../shared/types';
 
 export default function ProductsPage() {
+  const { hasPermission } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingStock, setEditingStock] = useState<{ id: string; value: number } | null>(null);
@@ -36,6 +38,7 @@ export default function ProductsPage() {
   };
 
   const handleToggleActive = async (product: Product) => {
+    if (!hasPermission('menu_edit')) return;
     try {
       await updateProduct(product.id, { isActive: !product.isActive });
       toast.success(`Product ${product.isActive ? 'deactivated' : 'activated'}`);
@@ -46,6 +49,7 @@ export default function ProductsPage() {
   };
 
   const handleDelete = async (product: Product) => {
+    if (!hasPermission('menu_edit')) return;
     if (!window.confirm(`Delete "${product.name}"? This cannot be undone.`)) return;
     try {
       await deleteProduct(product.id);
@@ -60,9 +64,11 @@ export default function ProductsPage() {
     ? products.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.skuCode.toLowerCase().includes(searchQuery.toLowerCase()))
     : products;
 
+  const canEditStock = hasPermission('menu_toggle_stock') || hasPermission('menu_edit');
+
   return (
-    <AdminLayout title="Products">
-      <div className="space-y-4">
+    <AdminLayout title="Products" requiredPermission="menu_view">
+      <div className="space-y-4 font-sans">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h2 className="text-2xl font-bold text-gray-800">Products</h2>
           <div className="flex gap-2">
@@ -73,12 +79,14 @@ export default function ProductsPage() {
               placeholder="Search products..."
               className="px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-48"
             />
-            <Link
-              href="/products/new"
-              className="px-4 py-2 bg-green-700 hover:bg-green-800 text-white font-semibold rounded-xl text-sm flex items-center gap-2 transition-colors"
-            >
-              ➕ Add Product
-            </Link>
+            {hasPermission('menu_edit') && (
+              <Link
+                href="/products/new"
+                className="px-4 py-2 bg-green-700 hover:bg-green-800 text-white font-semibold rounded-xl text-sm flex items-center gap-2 transition-colors animate-all"
+              >
+                ➕ Add Product
+              </Link>
+            )}
           </div>
         </div>
 
@@ -124,7 +132,7 @@ export default function ProductsPage() {
                       {/* SKU */}
                       <td className="px-4 py-3 text-gray-500 font-mono text-xs">{product.skuCode}</td>
                       {/* Price */}
-                      <td className="px-4 py-3 font-bold text-green-700">Rs. {product.priceLKR.toLocaleString()}</td>
+                      <td className="px-4 py-3 font-bold text-green-700 font-mono">Rs. {product.priceLKR.toLocaleString()}</td>
                       {/* Stock */}
                       <td className="px-4 py-3">
                         {editingStock?.id === product.id ? (
@@ -151,21 +159,23 @@ export default function ProductsPage() {
                           </div>
                         ) : (
                           <button
+                            disabled={!canEditStock}
                             onClick={() => setEditingStock({ id: product.id, value: product.stockQuantity })}
-                            className="flex items-center gap-1 hover:bg-gray-100 rounded-lg px-2 py-1 transition-colors"
+                            className={`flex items-center gap-1 rounded-lg px-2 py-1 transition-colors ${canEditStock ? 'hover:bg-gray-100' : 'cursor-default'}`}
                           >
                             <span className={`font-semibold ${product.stockQuantity === 0 ? 'text-red-600' : product.stockQuantity <= product.lowStockThreshold ? 'text-orange-600' : 'text-gray-700'}`}>
                               {product.stockQuantity}
                             </span>
-                            <span className="text-gray-400 text-xs">✏️</span>
+                            {canEditStock && <span className="text-gray-400 text-xs">✏️</span>}
                           </button>
                         )}
                       </td>
                       {/* Status */}
                       <td className="px-4 py-3">
                         <button
+                          disabled={!hasPermission('menu_edit')}
                           onClick={() => handleToggleActive(product)}
-                          className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${product.isActive ? 'bg-green-500' : 'bg-gray-300'}`}
+                          className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${product.isActive ? 'bg-green-500' : 'bg-gray-300'} ${!hasPermission('menu_edit') ? 'cursor-default' : ''}`}
                           aria-label={product.isActive ? 'Deactivate product' : 'Activate product'}
                         >
                           <span className={`inline-block w-4 h-4 rounded-full bg-white shadow transform transition-transform mt-0.5 ${product.isActive ? 'translate-x-4' : 'translate-x-0.5'}`} />
@@ -174,18 +184,24 @@ export default function ProductsPage() {
                       {/* Actions */}
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
-                          <Link
-                            href={`/products/${product.id}`}
-                            className="px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-medium"
-                          >
-                            Edit
-                          </Link>
-                          <button
-                            onClick={() => handleDelete(product)}
-                            className="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-medium"
-                          >
-                            Delete
-                          </button>
+                          {hasPermission('menu_edit') ? (
+                            <>
+                              <Link
+                                href={`/products/${product.id}`}
+                                className="px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-medium"
+                              >
+                                Edit
+                              </Link>
+                              <button
+                                onClick={() => handleDelete(product)}
+                                className="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-medium"
+                              >
+                                Delete
+                              </button>
+                            </>
+                          ) : (
+                            <span className="text-xs text-gray-400 italic">Read Only</span>
+                          )}
                         </div>
                       </td>
                     </tr>

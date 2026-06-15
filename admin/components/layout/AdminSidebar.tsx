@@ -3,7 +3,9 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut } from '../../lib/auth';
+import { useAuth } from '../../hooks/useAuth';
 import toast from 'react-hot-toast';
+import type { RolePermissions } from '../../../shared/types';
 
 interface AdminSidebarProps {
   pendingOrders?: number;
@@ -11,22 +13,29 @@ interface AdminSidebarProps {
 }
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Dashboard', icon: '📊' },
-  { href: '/orders', label: 'Orders', icon: '📦', badge: true },
-  { href: '/products', label: 'Products', icon: '🛍️' },
-  { href: '/customers', label: 'Customers', icon: '👥' },
-  { href: '/settings', label: 'Settings', icon: '⚙️' },
+  { href: '/dashboard', label: 'Dashboard', icon: '📊', permission: 'dashboard_view' },
+  { href: '/orders', label: 'Orders', icon: '📦', badge: true, permission: 'orders_view' },
+  { href: '/orders/delivery', label: 'Delivery Queue', icon: '🛵', permission: 'orders_delivery_queue' },
+  { href: '/products', label: 'Products', icon: '🛍️', permission: 'menu_view' },
+  { href: '/customers', label: 'Customers', icon: '👥', permission: 'customers_view' },
+  { href: '/staff', label: 'Staff & Roles', icon: '🔑', permission: 'staff_manage' },
+  { href: '/settings', label: 'Settings', icon: '⚙️', permission: 'settings_manage' },
 ];
 
 export default function AdminSidebar({ pendingOrders = 0, userName }: AdminSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { hasPermission } = useAuth();
 
   const handleSignOut = async () => {
     await signOut();
     toast.success('Signed out successfully');
     router.push('/login');
   };
+
+  const visibleNavItems = NAV_ITEMS.filter((item) =>
+    hasPermission(item.permission as keyof RolePermissions)
+  );
 
   return (
     <>
@@ -55,7 +64,7 @@ export default function AdminSidebar({ pendingOrders = 0, userName }: AdminSideb
 
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 overflow-y-auto">
-          {NAV_ITEMS.map(({ href, label, icon, badge }) => {
+          {visibleNavItems.map(({ href, label, icon, badge }) => {
             const active = pathname.startsWith(href);
             return (
               <Link
@@ -97,7 +106,7 @@ export default function AdminSidebar({ pendingOrders = 0, userName }: AdminSideb
 
       {/* Mobile Bottom Nav */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30 flex">
-        {NAV_ITEMS.map(({ href, label, icon, badge }) => {
+        {visibleNavItems.map(({ href, label, icon, badge }) => {
           const active = pathname.startsWith(href);
           return (
             <Link
