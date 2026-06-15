@@ -46,6 +46,24 @@ const EMPTY_FORM: ProductFormData = {
   sortOrder: 100,
 };
 
+const Label = ({ children }: { children: React.ReactNode }) => (
+  <label className="block text-sm font-medium text-gray-700 mb-1">{children}</label>
+);
+
+const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
+  <input
+    {...props}
+    className={`w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition-all ${props.className ?? ''}`}
+  />
+);
+
+const TextArea = (props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
+  <textarea
+    {...props}
+    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition-all resize-none"
+  />
+);
+
 export default function ProductFormPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -196,23 +214,6 @@ export default function ProductFormPage() {
     );
   }
 
-  const Label = ({ children }: { children: React.ReactNode }) => (
-    <label className="block text-sm font-medium text-gray-700 mb-1">{children}</label>
-  );
-
-  const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
-    <input
-      {...props}
-      className={`w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition-all ${props.className ?? ''}`}
-    />
-  );
-
-  const TextArea = (props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
-    <textarea
-      {...props}
-      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition-all resize-none"
-    />
-  );
 
   return (
     <AdminLayout title={isNew ? 'Add New Product' : 'Edit Product'}>

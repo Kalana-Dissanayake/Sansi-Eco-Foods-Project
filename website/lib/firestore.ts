@@ -26,6 +26,7 @@ import type {
   CartItem,
   CustomerFormData,
   ContactMessage,
+  DeliveryAddress,
 } from '../../shared/types';
 
 // ─── Settings ────────────────────────────────────────────────────────────────
@@ -261,10 +262,17 @@ export async function createOrder(
     const totalLKR = Math.max(0, subtotalLKR + shippingLKR - discountLKR);
 
     const orderId = await runTransaction(db, async (transaction) => {
-      // 1. Read and verify stock for all items
+      // 1. Read all required data first (all reads must precede all writes)
       const productRefs = cartItems.map((item) => doc(db, 'products', item.productId));
-      const productSnaps = await Promise.all(productRefs.map((ref) => transaction.get(ref)));
+      const customerDocId = customerId || customerData.phone.replace(/\D/g, '');
+      const customerRef = doc(db, 'customers', customerDocId);
 
+      const [productSnaps, customerSnap] = await Promise.all([
+        Promise.all(productRefs.map((ref) => transaction.get(ref))),
+        transaction.get(customerRef),
+      ]);
+
+      // 2. Verify stock
       for (let i = 0; i < cartItems.length; i++) {
         const snap = productSnaps[i];
         if (!snap.exists()) {
@@ -278,7 +286,7 @@ export async function createOrder(
         }
       }
 
-      // 2. Decrement stock for each item
+      // 3. Decrement stock for each item (Write)
       for (let i = 0; i < cartItems.length; i++) {
         const newQty =
           (productSnaps[i].data() as Product).stockQuantity - cartItems[i].quantity;
@@ -289,7 +297,7 @@ export async function createOrder(
         });
       }
 
-      // 3. Create order document
+      // 4. Create order document (Write)
       const orderRef = doc(collection(db, 'orders'));
       const orderData = {
         orderNumber,
@@ -335,17 +343,12 @@ export async function createOrder(
       };
       transaction.set(orderRef, orderData);
 
-      // 4. Upsert customer document
-      const customerDocId = customerId || customerData.phone.replace(/\D/g, '');
-      const customerRef = doc(db, 'customers', customerDocId);
-      const customerSnap = await transaction.get(customerRef);
-
+      // 5. Upsert customer document (Write)
       if (customerSnap.exists()) {
         transaction.update(customerRef, {
           totalOrders: increment(1),
           totalSpentLKR: increment(totalLKR),
           lastOrderAt: serverTimestamp(),
-          // Update address if new
         });
       } else {
         transaction.set(customerRef, {
@@ -469,6 +472,7 @@ export async function cancelOrder(
     const orderRef = doc(db, 'orders', orderId);
 
     await runTransaction(db, async (transaction) => {
+      // 1. All reads first: Read order document
       const orderSnap = await transaction.get(orderRef);
       if (!orderSnap.exists()) {
         throw new Error('Order does not exist.');
@@ -479,7 +483,11 @@ export async function cancelOrder(
         throw new Error('Only pending orders can be cancelled.');
       }
 
-      // Update order document status and statusHistory
+      // Read all product documents to be updated before any write operations
+      const productRefs = order.items.map((item) => doc(db, 'products', item.productId));
+      const productSnaps = await Promise.all(productRefs.map((ref) => transaction.get(ref)));
+
+      // 2. All writes: Update order document status and statusHistory
       const newHistoryEntry = {
         status: 'Cancelled',
         changedAt: Timestamp.now(),
@@ -494,14 +502,13 @@ export async function cancelOrder(
         updatedAt: serverTimestamp(),
       });
 
-      // Restore stock for all items
-      for (const item of order.items) {
-        const productRef = doc(db, 'products', item.productId);
-        const productSnap = await transaction.get(productRef);
+      // Restore stock for all items (Writes)
+      for (let i = 0; i < order.items.length; i++) {
+        const productSnap = productSnaps[i];
         if (productSnap.exists()) {
           const product = productSnap.data() as Product;
-          const newQty = product.stockQuantity + item.quantity;
-          transaction.update(productRef, {
+          const newQty = product.stockQuantity + order.items[i].quantity;
+          transaction.update(productRefs[i], {
             stockQuantity: newQty,
             inStock: true,
             updatedAt: serverTimestamp(),

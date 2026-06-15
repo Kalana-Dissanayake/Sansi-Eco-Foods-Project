@@ -26,6 +26,16 @@ const DEFAULT_SETTINGS: SiteSettings = {
 
 type SettingsTab = 'general' | 'shipping' | 'pixels' | 'social';
 
+const Input = (props: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">{props.label}</label>
+    <input
+      {...props}
+      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+    />
+  </div>
+);
+
 export default function SettingsPage() {
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
@@ -70,15 +80,6 @@ export default function SettingsPage() {
     { key: 'pixels', label: 'Tracking Pixels', icon: '📊' },
   ];
 
-  const Input = (props: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) => (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{props.label}</label>
-      <input
-        {...props}
-        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-      />
-    </div>
-  );
 
   if (loading) {
     return (

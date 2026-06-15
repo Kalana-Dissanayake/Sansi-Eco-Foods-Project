@@ -97,6 +97,7 @@ export interface Order {
   trackingNumber: string | null;
   statusHistory: StatusHistoryEntry[];
   emailSent: boolean;
+  customerId?: string | null;
   driverId?: string | null;
   driverName?: string | null;
   createdAt: Timestamp;

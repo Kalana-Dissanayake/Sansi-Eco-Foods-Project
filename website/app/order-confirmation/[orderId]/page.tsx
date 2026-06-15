@@ -1,20 +1,47 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { notFound, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getOrderById, getSettings } from '../../../lib/firestore';
+import type { Order, SiteSettings } from '../../../../shared/types';
+import Spinner from '../../../components/ui/Spinner';
 
-interface OrderConfirmationPageProps {
-  params: { orderId: string };
-}
+export default function OrderConfirmationPage() {
+  const params = useParams<{ orderId: string }>();
+  const [order, setOrder] = useState<Order | null>(null);
+  const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const [loading, setLoading] = useState(true);
 
-export const metadata: Metadata = {
-  title: 'Order Confirmed! | Sansi Eco Foods',
-  description: 'Your Sansi Eco Foods order has been placed successfully. Cash on Delivery — pay when it arrives!',
-};
+  useEffect(() => {
+    const loadData = async () => {
+      if (!params.orderId) return;
+      try {
+        const [o, s] = await Promise.all([
+          getOrderById(params.orderId),
+          getSettings(),
+        ]);
+        setOrder(o);
+        setSettings(s);
+      } catch (err) {
+        console.error('Error loading order confirmation:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [params.orderId]);
 
-export default async function OrderConfirmationPage({ params }: OrderConfirmationPageProps) {
-  const order = await getOrderById(params.orderId);
-  const settings = await getSettings();
+  if (loading) {
+    return (
+      <section className="section-padding">
+        <div className="container text-center py-5">
+          <Spinner size="lg" />
+          <p className="mt-3 text-muted">Loading order details...</p>
+        </div>
+      </section>
+    );
+  }
 
   if (!order) {
     notFound();
@@ -47,7 +74,7 @@ export default async function OrderConfirmationPage({ params }: OrderConfirmatio
           </div>
         </div>
 
-        {/* Order Details Card */}
+        {/* Order Summary Card */}
         <div className="p-4 rounded-3 mb-4" style={{ background: '#fff', border: '1px solid var(--gray-200)', boxShadow: 'var(--shadow-sm)' }}>
           <h5 className="mb-4" style={{ fontFamily: 'var(--font-heading)', fontWeight: 700 }}>
             Order Summary
