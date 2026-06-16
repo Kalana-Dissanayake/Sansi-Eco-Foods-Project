@@ -4,13 +4,18 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { initializeApp, deleteApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signOut as secondarySignOut } from 'firebase/auth';
+
+
 import AdminLayout from '../../components/layout/AdminLayout';
+import { useAuth } from '../../hooks/useAuth';
 import {
   getAdminUsers,
   getRoles,
   saveRole,
   saveStaffUser,
   updateStaffUser,
+  deleteStaffUser,
+  deleteRole,
 } from '../../lib/firestore';
 import type { AdminUser, Role, RolePermissions } from '../../../shared/types';
 
@@ -86,6 +91,7 @@ const DEFAULT_PERMISSIONS: RolePermissions = {
 };
 
 export default function StaffPage() {
+  const { adminUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'staff' | 'roles'>('staff');
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
@@ -162,6 +168,32 @@ export default function StaffPage() {
       toast.success('Staff role updated successfully');
     } catch {
       toast.error('Failed to update staff role');
+    }
+  };
+
+  const handleDeleteStaff = async (uid: string, name: string) => {
+    if (uid === adminUser?.uid) {
+      toast.error('You cannot delete your own account.');
+      return;
+    }
+    if (!window.confirm(`Are you sure you want to delete staff account for "${name}"? This cannot be undone.`)) return;
+    try {
+      await deleteStaffUser(uid);
+      toast.success('Staff account deleted');
+      loadData();
+    } catch {
+      toast.error('Failed to delete staff account');
+    }
+  };
+
+  const handleDeleteRole = async (roleId: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to delete the role "${name}"? Staff assigned to this role will lose their custom permissions.`)) return;
+    try {
+      await deleteRole(roleId);
+      toast.success('Role deleted');
+      loadData();
+    } catch {
+      toast.error('Failed to delete role');
     }
   };
 
@@ -382,8 +414,16 @@ export default function StaffPage() {
                             )}
                           </td>
                           <td className="px-6 py-4">
-                            {/* Actions / Reset */}
-                            <span className="text-xs text-gray-400">-</span>
+                            {user.roleId === 'super_admin' || user.role === 'super_admin' || user.uid === adminUser?.uid ? (
+                              <span className="text-xs text-gray-400 italic">Protected</span>
+                            ) : (
+                              <button
+                                onClick={() => handleDeleteStaff(user.uid, user.displayName)}
+                                className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 rounded-xl text-xs font-bold text-red-600 transition-colors"
+                              >
+                                Delete
+                              </button>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -448,6 +488,14 @@ export default function StaffPage() {
                       >
                         ⚙️ Edit Permissions
                       </button>
+                      {!role.isSystem && (
+                        <button
+                          onClick={() => handleDeleteRole(role.id, role.name)}
+                          className="px-3.5 py-1.5 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl text-xs font-bold text-red-600 transition-colors"
+                        >
+                          🗑️ Delete
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}

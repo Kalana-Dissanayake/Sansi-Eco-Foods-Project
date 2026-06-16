@@ -176,6 +176,10 @@ export async function updateOrderTracking(orderId: string, trackingNumber: strin
   });
 }
 
+export async function deleteOrder(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'orders', id));
+}
+
 // ─── Products ─────────────────────────────────────────────────────────────────
 
 export async function getAllProducts(): Promise<Product[]> {
@@ -263,6 +267,10 @@ export async function updateCustomerNotes(customerId: string, notes: string): Pr
   await updateDoc(doc(db, 'customers', customerId), { notes });
 }
 
+export async function deleteCustomer(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'customers', id));
+}
+
 // ─── Settings ─────────────────────────────────────────────────────────────────
 
 export async function getSettings(): Promise<SiteSettings | null> {
@@ -339,6 +347,14 @@ export async function saveStaffUser(uid: string, data: { email: string; displayN
 
 export async function updateStaffUser(uid: string, data: Partial<AdminUser>): Promise<void> {
   await updateDoc(doc(db, 'users', uid), data);
+}
+
+export async function deleteStaffUser(uid: string): Promise<void> {
+  await deleteDoc(doc(db, 'users', uid));
+}
+
+export async function deleteRole(roleId: string): Promise<void> {
+  await deleteDoc(doc(db, 'roles', roleId));
 }
 
 export async function seedInitialData(): Promise<void> {

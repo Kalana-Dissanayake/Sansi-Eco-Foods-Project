@@ -5,7 +5,7 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import AdminLayout from '../../components/layout/AdminLayout';
 import { useAuth } from '../../hooks/useAuth';
-import { getCustomers, updateCustomerNotes } from '../../lib/firestore';
+import { getCustomers, updateCustomerNotes, deleteCustomer } from '../../lib/firestore';
 import type { Customer } from '../../../shared/types';
 
 function formatDate(ts: { toDate(): Date } | null): string {
@@ -20,8 +20,15 @@ export default function CustomersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingNotes, setEditingNotes] = useState<{ id: string; notes: string } | null>(null);
 
+  const load = async () => {
+    setLoading(true);
+    const data = await getCustomers();
+    setCustomers(data);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    getCustomers().then((data) => { setCustomers(data); setLoading(false); });
+    load();
   }, []);
 
   const handleSaveNotes = async (customerId: string) => {
@@ -33,6 +40,17 @@ export default function CustomersPage() {
       toast.success('Notes saved');
     } catch {
       toast.error('Failed to save notes');
+    }
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to delete customer "${name}"? This cannot be undone.`)) return;
+    try {
+      await deleteCustomer(id);
+      toast.success('Customer deleted');
+      load();
+    } catch {
+      toast.error('Failed to delete customer');
     }
   };
 
@@ -76,7 +94,7 @@ export default function CustomersPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-100">
-                    {['Customer', 'Phone', 'District', 'Orders', 'Total Spent', 'Last Order', 'Notes', ''].map((h) => (
+                    {['Customer', 'Phone', 'District', 'Orders', 'Total Spent', 'Last Order', 'Notes', 'Actions'].map((h) => (
                       <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         {h}
                       </th>
@@ -135,12 +153,22 @@ export default function CustomersPage() {
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        <Link
-                          href={`/customers/${customer.id}`}
-                          className="px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-medium"
-                        >
-                          View →
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          <Link
+                            href={`/customers/${customer.id}`}
+                            className="px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-medium"
+                          >
+                            View
+                          </Link>
+                          {hasPermission('customers_edit') && (
+                            <button
+                              onClick={() => handleDelete(customer.id, customer.name)}
+                              className="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-medium"
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

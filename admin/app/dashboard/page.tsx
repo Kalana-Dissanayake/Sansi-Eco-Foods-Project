@@ -116,12 +116,6 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="space-y-6 font-sans">
-          {/* Headline */}
-          <div>
-            <h2 className="text-xl font-bold text-slate-800">Dashboard</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Welcome back — here's what's happening today</p>
-          </div>
-
           {/* 8 KPIs Grid matching image */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {/* 1. Orders Today */}

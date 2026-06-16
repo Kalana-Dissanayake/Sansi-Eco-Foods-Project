@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 import AdminLayout from '../../../components/layout/AdminLayout';
-import { getProductById, createProduct, updateProduct, getAllCategories } from '../../../lib/firestore';
+import { getProductById, createProduct, updateProduct, getAllCategories, getAllProducts } from '../../../lib/firestore';
 import type { Product, Category } from '../../../../shared/types';
 
 interface ProductFormData {
@@ -103,6 +103,24 @@ export default function ProductFormPage() {
             sortOrder: product.sortOrder,
           });
           setExistingImages(product.images ?? []);
+        }
+      } else if (isNew) {
+        try {
+          const products = await getAllProducts();
+          const skuNumbers = products
+            .map((p) => {
+              const match = p.skuCode?.match(/^SEF-(\d+)$/i);
+              return match ? parseInt(match[1], 10) : 0;
+            })
+            .filter((n) => n > 0);
+          const nextNum = skuNumbers.length > 0 ? Math.max(...skuNumbers) + 1 : 1;
+          const generatedSku = `SEF-${String(nextNum).padStart(3, '0')}`;
+          setForm((prev) => ({
+            ...prev,
+            skuCode: generatedSku,
+          }));
+        } catch (err) {
+          console.error('Error auto-generating SKU code:', err);
         }
       }
       setLoading(false);

@@ -22,7 +22,16 @@ const Pie = dynamic(() => import('recharts').then((m) => m.Pie), { ssr: false })
 const Cell = dynamic(() => import('recharts').then((m) => m.Cell), { ssr: false });
 const Legend = dynamic(() => import('recharts').then((m) => m.Legend), { ssr: false });
 
-const COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#6366f1', '#8b5cf6'];
+const STATUS_COLORS: Record<string, string> = {
+  Pending: '#f59e0b',     // Amber
+  Confirmed: '#3b82f6',   // Blue
+  Processing: '#06b6d4',  // Cyan
+  Dispatched: '#8b5cf6',  // Purple
+  Delivered: '#10b981',   // Green
+  Cancelled: '#ef4444',   // Red
+};
+
+const DEFAULT_COLOR = '#64748b'; // Slate
 
 interface SalesDataPoint {
   date: string;
@@ -205,7 +214,7 @@ export default function ReportsPage() {
                   <PieChart>
                     <Pie data={statusData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={3} dataKey="value">
                       {statusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.name] || DEFAULT_COLOR} />
                       ))}
                     </Pie>
                     <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px' }} />
@@ -213,9 +222,9 @@ export default function ReportsPage() {
                 </ResponsiveContainer>
               </div>
               <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center pt-2">
-                {statusData.map((item, idx) => (
+                {statusData.map((item) => (
                   <div key={item.name} className="flex items-center gap-1.5 text-[10px] font-bold text-slate-600">
-                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
+                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: STATUS_COLORS[item.name] || DEFAULT_COLOR }} />
                     <span>{item.name} ({item.value})</span>
                   </div>
                 ))}

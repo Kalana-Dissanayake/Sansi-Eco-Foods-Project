@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 import AdminLayout from '../../components/layout/AdminLayout';
 import OrderStatusBadge from '../../components/orders/OrderStatusBadge';
-import { getOrders } from '../../lib/firestore';
+import { getOrders, deleteOrder } from '../../lib/firestore';
+import { useAuth } from '../../hooks/useAuth';
 import type { Order, OrderStatus } from '../../../shared/types';
 
 const STATUS_TABS: { label: string; value?: OrderStatus }[] = [
@@ -23,20 +25,33 @@ function formatDate(ts: { toDate(): Date } | null): string {
 }
 
 export default function OrdersPage() {
+  const { hasPermission } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeStatus, setActiveStatus] = useState<OrderStatus | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const load = async () => {
+    setLoading(true);
+    const data = await getOrders(activeStatus);
+    setOrders(data);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      const data = await getOrders(activeStatus);
-      setOrders(data);
-      setLoading(false);
-    };
     load();
   }, [activeStatus]);
+
+  const handleDelete = async (id: string, orderNumber: string) => {
+    if (!window.confirm(`Are you sure you want to delete order "${orderNumber}"? This cannot be undone.`)) return;
+    try {
+      await deleteOrder(id);
+      toast.success('Order deleted');
+      load();
+    } catch {
+      toast.error('Failed to delete order');
+    }
+  };
 
   const filteredOrders = searchQuery
     ? orders.filter((o) =>
@@ -121,12 +136,22 @@ export default function OrdersPage() {
                       </td>
                       <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">{formatDate(order.createdAt as { toDate(): Date })}</td>
                       <td className="px-4 py-3">
-                        <Link
-                          href={`/orders/${order.id}`}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg text-xs font-semibold transition-colors"
-                        >
-                          View →
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          <Link
+                            href={`/orders/${order.id}`}
+                            className="inline-flex items-center gap-1 px-3 py-1 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg text-xs font-semibold transition-colors"
+                          >
+                            View
+                          </Link>
+                          {hasPermission('orders_refund') && (
+                            <button
+                              onClick={() => handleDelete(order.id, order.orderNumber)}
+                              className="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-medium"
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
