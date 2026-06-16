@@ -33,12 +33,15 @@ export default function TestimonialsSection() {
   const carouselRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Initialize Owl Carousel after scripts load
+    let intervalId: NodeJS.Timeout;
+    let isMounted = true;
+
     const init = () => {
-      if (typeof window !== 'undefined' && (window as typeof window & { $?: (el: Element) => { owlCarousel: (opts: Record<string, unknown>) => void } }).$) {
-        const $ = (window as typeof window & { $: (el: Element) => { owlCarousel: (opts: Record<string, unknown>) => void } }).$;
+      if (!isMounted) return;
+      const w = window as any;
+      if (w.$ && w.$.fn && typeof w.$.fn.owlCarousel === 'function') {
         if (carouselRef.current) {
-          $(carouselRef.current).owlCarousel({
+          w.$(carouselRef.current).owlCarousel({
             autoplay: true,
             autoplayTimeout: 5000,
             loop: true,
@@ -52,13 +55,35 @@ export default function TestimonialsSection() {
               1200: { items: 3 },
             },
           });
+          clearInterval(intervalId);
         }
       }
     };
 
-    // Wait for jQuery/Owl to be available
-    const timer = setTimeout(init, 1500);
-    return () => clearTimeout(timer);
+    // Try immediately
+    init();
+    // Poll every 100ms
+    intervalId = setInterval(init, 100);
+
+    // Safety timeout: stop polling after 10 seconds
+    const timeoutId = setTimeout(() => {
+      clearInterval(intervalId);
+    }, 10000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+      clearTimeout(timeoutId);
+      
+      const w = window as any;
+      if (w.$ && w.$.fn && typeof w.$.fn.owlCarousel === 'function' && carouselRef.current) {
+        try {
+          w.$(carouselRef.current).trigger('destroy.owl.carousel');
+        } catch (e) {
+          // Ignore destroy errors
+        }
+      }
+    };
   }, []);
 
   return (

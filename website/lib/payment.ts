@@ -54,16 +54,27 @@ export async function placeOrder(
       const discountLKR = coupon?.discount ?? 0;
       const totalLKR = Math.max(0, subtotalLKR + shippingLKR - discountLKR);
 
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      const emailItems = cartItems.map((item) => {
+        let imageUrl = item.image || '';
+        if (imageUrl && !imageUrl.startsWith('http') && origin) {
+          imageUrl = `${origin}${imageUrl}`;
+        }
+        return {
+          name: item.name,
+          units: item.quantity,
+          price: (item.priceLKR * item.quantity).toLocaleString(),
+          item: imageUrl,
+        };
+      });
+
       await sendOrderConfirmation({
-        customerName: customerData.name,
         customerEmail: customerData.email,
         orderNumber: result.orderNumber,
-        orderItems: cartItems.map(
-          (item) => `${item.name} × ${item.quantity} — Rs. ${item.priceLKR * item.quantity}`
-        ),
-        totalLKR,
-        deliveryAddress: `${customerData.deliveryAddress.line1}, ${customerData.deliveryAddress.city}, ${customerData.deliveryAddress.district}`,
-        whatsappNumber: settings.whatsappNumber,
+        orders: emailItems,
+        shippingCost: shippingLKR.toLocaleString(),
+        taxCost: '0',
+        totalCost: totalLKR.toLocaleString(),
       });
     } catch (emailError) {
       console.error('Email confirmation failed (non-critical):', emailError);

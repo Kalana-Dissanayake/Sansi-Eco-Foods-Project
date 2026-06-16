@@ -1,13 +1,19 @@
 import emailjs from '@emailjs/browser';
 
+interface EmailJSOrderItem {
+  name: string;
+  units: number;
+  price: string;
+  item: string;
+}
+
 interface OrderConfirmationData {
-  customerName: string;
   customerEmail: string;
   orderNumber: string;
-  orderItems: string[];
-  totalLKR: number;
-  deliveryAddress: string;
-  whatsappNumber: string;
+  orders: EmailJSOrderItem[];
+  shippingCost: string;
+  taxCost: string;
+  totalCost: string;
 }
 
 export async function sendOrderConfirmation(data: OrderConfirmationData): Promise<void> {
@@ -21,15 +27,15 @@ export async function sendOrderConfirmation(data: OrderConfirmationData): Promis
   }
 
   const templateParams = {
-    to_email: data.customerEmail,
-    customer_name: data.customerName,
-    order_number: data.orderNumber,
-    order_items: data.orderItems.join('\n'),
-    total_lkr: `Rs. ${data.totalLKR.toLocaleString()}`,
-    payment_method: 'Cash on Delivery',
-    delivery_address: data.deliveryAddress,
-    estimated_delivery: '2–5 business days',
-    whatsapp_link: `https://wa.me/${data.whatsappNumber}`,
+    to_email: data.customerEmail, // Standard recipient email parameter
+    email: data.customerEmail,    // matches {{email}} in footer
+    order_id: data.orderNumber,   // matches {{order_id}} in template header
+    orders: data.orders,          // matches {{#orders}} ... {{/orders}}
+    cost: {                       // matches {{cost.shipping}}, {{cost.tax}}, {{cost.total}}
+      shipping: data.shippingCost,
+      tax: data.taxCost,
+      total: data.totalCost,
+    },
   };
 
   await emailjs.send(serviceId, templateId, templateParams, publicKey);

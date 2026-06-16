@@ -171,17 +171,17 @@ export default async function RootLayout({
         {/* jQuery (required for Owl Carousel & WOW) */}
         <Script
           src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
-          strategy="lazyOnload"
+          strategy="beforeInteractive"
         />
         {/* Owl Carousel */}
         <Script
           src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"
-          strategy="lazyOnload"
+          strategy="beforeInteractive"
         />
         {/* WOW.js */}
         <Script
           src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"
-          strategy="lazyOnload"
+          strategy="beforeInteractive"
         />
         <Script id="init-wow" strategy="lazyOnload">
           {`
