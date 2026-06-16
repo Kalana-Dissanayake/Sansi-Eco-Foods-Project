@@ -39,7 +39,6 @@ const SECTIONS: NavSection[] = [
     title: 'MANAGEMENT',
     items: [
       { href: '/orders', label: 'Orders', icon: '📦', permission: 'orders_view', badgeType: 'orders' },
-      { href: '/orders/delivery', label: 'Delivery Queue', icon: '🛵', permission: 'orders_delivery_queue' },
       { href: '/products', label: 'Products', icon: '🛍️', permission: 'menu_view' },
       { href: '/customers', label: 'Customers', icon: '👥', permission: 'customers_view' },
       { href: '/staff', label: 'Staff & Roles', icon: '🔑', permission: 'staff_manage' },
@@ -48,14 +47,14 @@ const SECTIONS: NavSection[] = [
   {
     title: 'ANALYTICS',
     items: [
-      { href: '/reports', label: 'Reports', icon: '📈', permission: 'dashboard_view' },
-      { href: '/messages', label: 'Messages', icon: '✉️', permission: 'settings_manage', badgeType: 'messages' },
+      { href: '/reports', label: 'Reports', icon: '📈', permission: 'reports_view' },
+      { href: '/messages', label: 'Messages', icon: '✉️', permission: 'messages_view', badgeType: 'messages' },
     ],
   },
   {
     title: 'SYSTEM',
     items: [
-      { href: '/export', label: 'Export Data', icon: '📥', permission: 'dashboard_export_analytics' },
+      { href: '/export', label: 'Export Data', icon: '📥', permission: 'export_view' },
       { href: '/settings', label: 'Settings', icon: '⚙️', permission: 'settings_manage' },
     ],
   },
@@ -69,7 +68,7 @@ export default function AdminSidebar({ pendingOrders = 0, userName }: AdminSideb
 
   useEffect(() => {
     // Only subscribe to messages if user has permissions
-    if (!hasPermission('settings_manage')) return;
+    if (!hasPermission('messages_view')) return;
     const q = query(collection(db, 'contact_messages'), where('read', '==', false));
     const unsubscribe = onSnapshot(
       q,
@@ -94,7 +93,7 @@ export default function AdminSidebar({ pendingOrders = 0, userName }: AdminSideb
   const isActive = (itemHref: string) => {
     if (pathname === itemHref) return true;
     if (itemHref === '/orders') {
-      return pathname.startsWith('/orders/') && !pathname.startsWith('/orders/delivery');
+      return pathname.startsWith('/orders/');
     }
     if (itemHref !== '/dashboard') {
       return pathname.startsWith(itemHref + '/');

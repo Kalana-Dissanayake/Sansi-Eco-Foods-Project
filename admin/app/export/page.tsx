@@ -156,7 +156,7 @@ export default function ExportDataPage() {
   };
 
   return (
-    <AdminLayout title="Export Data" requiredPermission="dashboard_export_analytics">
+    <AdminLayout title="Export Data" requiredPermission="export_view">
       <div className="space-y-6 font-sans">
         {/* Header */}
         <div>

@@ -142,7 +142,7 @@ export default function ReportsPage() {
   }, []);
 
   return (
-    <AdminLayout title="Reports & Charts" requiredPermission="dashboard_view">
+    <AdminLayout title="Reports & Charts" requiredPermission="reports_view">
       {loading ? (
         <div className="flex items-center justify-center py-24">
           <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>

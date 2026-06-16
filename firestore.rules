@@ -24,7 +24,8 @@ service cloud.firestore {
     // Orders: anyone can create, admin/staff or the customer who placed it can read/update
     match /orders/{id} {
       allow create: if true;
-      allow read, update: if hasPermission('orders_view') || hasPermission('orders_delivery_queue') || isSuperAdmin() || (request.auth != null && resource.data.customerId == request.auth.uid);
+      allow read: if hasPermission('orders_view') || hasPermission('reports_view') || hasPermission('export_view') || isSuperAdmin() || (request.auth != null && resource.data.customerId == request.auth.uid);
+      allow update: if hasPermission('orders_view') || isSuperAdmin() || (request.auth != null && resource.data.customerId == request.auth.uid);
       allow delete: if isSuperAdmin();
     }
 
@@ -36,13 +37,14 @@ service cloud.firestore {
 
     // Customers: admin or the customer themselves
     match /customers/{id} {
-      allow read, write: if hasPermission('customers_view') || isSuperAdmin() || (request.auth != null && request.auth.uid == id);
+      allow read: if hasPermission('customers_view') || hasPermission('export_view') || isSuperAdmin() || (request.auth != null && request.auth.uid == id);
+      allow write: if hasPermission('customers_view') || isSuperAdmin() || (request.auth != null && request.auth.uid == id);
     }
 
     // Contact messages: anyone can create, admin can read/update
     match /contact_messages/{id} {
       allow create: if true;
-      allow read, update, delete: if hasPermission('settings_manage') || isSuperAdmin();
+      allow read, update, delete: if hasPermission('messages_view') || isSuperAdmin();
     }
 
     // Admin users

@@ -119,7 +119,7 @@ export default function MessagesPage() {
   const unreadCount = messages.filter((m) => !m.read).length;
 
   return (
-    <AdminLayout title="Messages & Inquiries" requiredPermission="settings_manage">
+    <AdminLayout title="Messages & Inquiries" requiredPermission="messages_view">
       <div className="space-y-6 font-sans h-[calc(100vh-140px)] flex flex-col">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 flex-shrink-0">

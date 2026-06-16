@@ -34,7 +34,6 @@ const PERMISSION_GROUPS = [
       { key: 'orders_edit', label: 'Edit Order Notes', desc: 'Allows editing notes/details on active orders.' },
       { key: 'orders_update_status', label: 'Update Status', desc: 'Allows moving order fulfillment status.' },
       { key: 'orders_refund', label: 'Refund Orders', desc: 'Allows processing cancellations and refunds.' },
-      { key: 'orders_delivery_queue', label: 'Delivery Driver Access', desc: 'Allows access to delivery queue assignment.' },
     ],
   },
   {
@@ -70,6 +69,24 @@ const PERMISSION_GROUPS = [
       { key: 'staff_manage', label: 'Manage Staff & Roles', desc: 'Allows creating staff accounts and managing permissions.' },
     ],
   },
+  {
+    title: 'Reports',
+    permissions: [
+      { key: 'reports_view', label: 'View Reports', desc: 'Allows access to the business reports and analytics.' },
+    ],
+  },
+  {
+    title: 'Messages',
+    permissions: [
+      { key: 'messages_view', label: 'View Contact Messages', desc: 'Allows access to read and manage contact form submissions.' },
+    ],
+  },
+  {
+    title: 'Export Data',
+    permissions: [
+      { key: 'export_view', label: 'Export Data', desc: 'Allows exporting database collections (orders, products, etc.) as Excel/CSV.' },
+    ],
+  },
 ];
 
 const DEFAULT_PERMISSIONS: RolePermissions = {
@@ -79,7 +96,6 @@ const DEFAULT_PERMISSIONS: RolePermissions = {
   orders_edit: false,
   orders_update_status: false,
   orders_refund: false,
-  orders_delivery_queue: false,
   menu_view: false,
   menu_edit: false,
   menu_toggle_stock: false,
@@ -88,6 +104,9 @@ const DEFAULT_PERMISSIONS: RolePermissions = {
   coupons_manage: false,
   settings_manage: false,
   staff_manage: false,
+  reports_view: false,
+  messages_view: false,
+  export_view: false,
 };
 
 export default function StaffPage() {

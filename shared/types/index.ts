@@ -183,7 +183,6 @@ export interface RolePermissions {
   orders_edit: boolean;
   orders_update_status: boolean;
   orders_refund: boolean;
-  orders_delivery_queue: boolean;
   // Products & Categories
   menu_view: boolean;
   menu_edit: boolean;
@@ -197,6 +196,10 @@ export interface RolePermissions {
   settings_manage: boolean;
   // Staff & Roles
   staff_manage: boolean;
+  // New Module Permissions
+  reports_view: boolean;
+  messages_view: boolean;
+  export_view: boolean;
 }
 
 export interface Role {
