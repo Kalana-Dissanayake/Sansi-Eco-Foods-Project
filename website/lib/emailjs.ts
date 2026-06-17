@@ -4,7 +4,7 @@ interface EmailJSOrderItem {
   name: string;
   units: number;
   price: string;
-  item: string;
+  image_url: string;
 }
 
 interface OrderConfirmationData {

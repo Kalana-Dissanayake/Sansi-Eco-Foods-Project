@@ -72,7 +72,7 @@ export async function placeOrder(
           name: item.name,
           units: item.quantity,
           price: (item.priceLKR * item.quantity).toLocaleString(),
-          item: imageUrl,
+          image_url: imageUrl,
         };
       });
 
