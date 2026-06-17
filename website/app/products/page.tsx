@@ -9,8 +9,7 @@ export const metadata: Metadata = {
     'Browse our full range of 100% natural dehydrated fruit snacks. Mango Jujubes, Papaya Jujubes, Banana Coins, Mixed Fruits & more. Cash on Delivery island-wide.',
 };
 
-// Revalidate every 5 minutes
-export const revalidate = 300;
+export const dynamic = 'force-dynamic';
 
 export default async function ProductsPage() {
   const [products, categories] = await Promise.all([getProducts(), getCategories()]);

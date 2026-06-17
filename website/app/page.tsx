@@ -13,6 +13,8 @@ export const metadata: Metadata = {
     'Shop premium 100% natural dehydrated fruit snacks from Anamaduwa, Sri Lanka. Mango Jujubes, Papaya, Banana Coins & more. No chemicals. Island-wide Cash on Delivery.',
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   const settings = await getSettings();
   let featuredProducts = settings?.featuredProductIds

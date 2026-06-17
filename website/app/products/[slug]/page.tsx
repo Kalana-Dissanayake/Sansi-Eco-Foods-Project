@@ -9,11 +9,7 @@ interface ProductPageProps {
   params: { slug: string };
 }
 
-// Generate static params for all active products at build time
-export async function generateStaticParams() {
-  const products = await getProducts();
-  return products.map((p) => ({ slug: p.slug }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const product = await getProductBySlug(params.slug);
