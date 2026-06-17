@@ -54,11 +54,19 @@ export async function placeOrder(
       const discountLKR = coupon?.discount ?? 0;
       const totalLKR = Math.max(0, subtotalLKR + shippingLKR - discountLKR);
 
-      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      let origin = typeof window !== 'undefined' ? window.location.origin : '';
+      if (!origin && process.env.NEXT_PUBLIC_VERCEL_URL) {
+        origin = `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+      }
+      // Normalize origin to remove trailing slash
+      origin = origin.replace(/\/$/, '');
+
       const emailItems = cartItems.map((item) => {
         let imageUrl = item.image || '';
         if (imageUrl && !imageUrl.startsWith('http') && origin) {
-          imageUrl = `${origin}${imageUrl}`;
+          // Normalize path to ensure it starts with a single slash
+          const cleanPath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
+          imageUrl = `${origin}${cleanPath}`;
         }
         return {
           name: item.name,
