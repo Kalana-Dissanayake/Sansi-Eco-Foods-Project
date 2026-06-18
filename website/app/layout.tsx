@@ -5,7 +5,6 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '../context/AuthContext';
 import { CartProvider } from '../context/CartContext';
 import AnnouncementBar from '../components/layout/AnnouncementBar';
-import TopBar from '../components/layout/TopBar';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import { getSettings } from '../lib/firestore';
@@ -130,13 +129,6 @@ export default async function RootLayout({
             <AnnouncementBar
               enabled={settings.announcementBarEnabled}
               text={settings.announcementBarText}
-            />
-            <TopBar
-              address={settings.businessAddress}
-              email={settings.contactEmail}
-              facebookUrl={settings.facebookUrl}
-              instagramUrl={settings.instagramUrl}
-              tiktokUrl={settings.tiktokUrl}
             />
             <Navbar />
             <main>{children}</main>
