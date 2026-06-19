@@ -8,6 +8,7 @@ import AdminLayout from '../../../components/layout/AdminLayout';
 import OrderStatusBadge from '../../../components/orders/OrderStatusBadge';
 import { useAuth } from '../../../hooks/useAuth';
 import { getCustomerById, getCustomerOrders, deleteCustomer } from '../../../lib/firestore';
+import ConfirmationModal from '../../../components/ui/ConfirmationModal';
 import type { Customer, Order } from '../../../../shared/types';
 
 function formatDate(ts: { toDate(): Date } | null): string {
@@ -29,6 +30,7 @@ export default function CustomerDetailPage() {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -55,9 +57,13 @@ export default function CustomerDetailPage() {
     loadData();
   }, [params.id]);
 
-  const handleDelete = async () => {
+  const handleDeleteTrigger = () => {
+    setIsDeleteOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
     if (!customer) return;
-    if (!window.confirm(`Are you sure you want to delete customer "${customer.name}"? This cannot be undone.`)) return;
+    setIsDeleteOpen(false);
     try {
       await deleteCustomer(customer.id);
       toast.success('Customer deleted');
@@ -86,7 +92,7 @@ export default function CustomerDetailPage() {
           </div>
           {customer && hasPermission('customers_edit') && (
             <button
-              onClick={handleDelete}
+              onClick={handleDeleteTrigger}
               className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-sm font-semibold transition-colors"
             >
               🗑️ Delete Customer
@@ -244,6 +250,18 @@ export default function CustomerDetailPage() {
           </div>
         )}
       </div>
+      {customer && (
+        <ConfirmationModal
+          isOpen={isDeleteOpen}
+          title="Delete Customer"
+          message={`Are you sure you want to delete customer "${customer.name}"? This cannot be undone.`}
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          type="danger"
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setIsDeleteOpen(false)}
+        />
+      )}
     </AdminLayout>
   );
 }

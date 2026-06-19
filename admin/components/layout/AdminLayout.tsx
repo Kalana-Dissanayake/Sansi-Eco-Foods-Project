@@ -58,7 +58,7 @@ export default function AdminLayout({
           pendingOrders={pendingOrders}
           userName={adminUser?.displayName ?? adminUser?.email}
         />
-        <main className="p-6">
+        <main className="p-6 page-fade-in">
           {hasAccess ? (
             children
           ) : (

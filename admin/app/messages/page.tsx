@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import AdminLayout from '../../components/layout/AdminLayout';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
 
 interface Message {
   id: string;
@@ -33,6 +34,8 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [filterTab, setFilterTab] = useState<'unread' | 'all'>('unread');
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Message | null>(null);
 
   const loadMessages = async () => {
     setLoading(true);
@@ -94,13 +97,20 @@ export default function MessagesPage() {
       toast.error('Failed to update status');
     }
   };
+  
+  const handleDeleteTrigger = (msg: Message) => {
+    setDeleteTarget(msg);
+    setIsDeleteOpen(true);
+  };
 
-  const handleDeleteMessage = async (msg: Message) => {
-    if (!window.confirm('Are you sure you want to delete this message? This cannot be undone.')) return;
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    setIsDeleteOpen(false);
     try {
-      await deleteDoc(doc(db, 'contact_messages', msg.id));
+      await deleteDoc(doc(db, 'contact_messages', deleteTarget.id));
       toast.success('Message deleted successfully');
       setSelectedMessage(null);
+      setDeleteTarget(null);
       loadMessages();
     } catch {
       toast.error('Failed to delete message');
@@ -207,7 +217,7 @@ export default function MessagesPage() {
                         {selectedMessage.read ? '✉️ Mark Unread' : '👁️ Mark Read'}
                       </button>
                       <button
-                        onClick={() => handleDeleteMessage(selectedMessage)}
+                        onClick={() => handleDeleteTrigger(selectedMessage)}
                         className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 rounded-xl text-[11px] font-bold transition-all"
                       >
                         🗑️ Delete Inquiry
@@ -249,6 +259,19 @@ export default function MessagesPage() {
           </div>
         )}
       </div>
+      <ConfirmationModal
+        isOpen={isDeleteOpen}
+        title="Delete Message"
+        message="Are you sure you want to delete this message? This cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        type="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => {
+          setIsDeleteOpen(false);
+          setDeleteTarget(null);
+        }}
+      />
     </AdminLayout>
   );
 }

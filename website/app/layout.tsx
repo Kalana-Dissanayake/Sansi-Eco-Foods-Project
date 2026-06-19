@@ -131,7 +131,7 @@ export default async function RootLayout({
               text={settings.announcementBarText}
             />
             <Navbar />
-            <main>{children}</main>
+            <main className="page-fade-in">{children}</main>
             <Footer
               phone={settings.whatsappNumber}
               email={settings.contactEmail}

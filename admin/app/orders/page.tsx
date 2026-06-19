@@ -8,6 +8,7 @@ import OrderStatusBadge from '../../components/orders/OrderStatusBadge';
 import { getOrders, deleteOrder } from '../../lib/firestore';
 import { useAuth } from '../../hooks/useAuth';
 import type { Order, OrderStatus } from '../../../shared/types';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
 
 const STATUS_TABS: { label: string; value?: OrderStatus }[] = [
   { label: 'All' },
@@ -30,6 +31,8 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [activeStatus, setActiveStatus] = useState<OrderStatus | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteOrderTarget, setDeleteOrderTarget] = useState<{ id: string; orderNumber: string } | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -42,11 +45,18 @@ export default function OrdersPage() {
     load();
   }, [activeStatus]);
 
-  const handleDelete = async (id: string, orderNumber: string) => {
-    if (!window.confirm(`Are you sure you want to delete order "${orderNumber}"? This cannot be undone.`)) return;
+  const handleDeleteTrigger = (id: string, orderNumber: string) => {
+    setDeleteOrderTarget({ id, orderNumber });
+    setIsDeleteOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteOrderTarget) return;
+    setIsDeleteOpen(false);
     try {
-      await deleteOrder(id);
+      await deleteOrder(deleteOrderTarget.id);
       toast.success('Order deleted');
+      setDeleteOrderTarget(null);
       load();
     } catch {
       toast.error('Failed to delete order');
@@ -145,7 +155,7 @@ export default function OrdersPage() {
                           </Link>
                           {hasPermission('orders_refund') && (
                             <button
-                              onClick={() => handleDelete(order.id, order.orderNumber)}
+                              onClick={() => handleDeleteTrigger(order.id, order.orderNumber)}
                               className="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-medium"
                             >
                               Delete
@@ -161,6 +171,19 @@ export default function OrdersPage() {
           )}
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={isDeleteOpen}
+        title="Delete Order"
+        message={`Are you sure you want to delete order "${deleteOrderTarget?.orderNumber}"? This cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        type="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => {
+          setIsDeleteOpen(false);
+          setDeleteOrderTarget(null);
+        }}
+      />
     </AdminLayout>
   );
 }

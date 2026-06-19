@@ -7,6 +7,7 @@ import { getAuth, createUserWithEmailAndPassword, signOut as secondarySignOut } 
 
 
 import AdminLayout from '../../components/layout/AdminLayout';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import { useAuth } from '../../hooks/useAuth';
 import {
   getAdminUsers,
@@ -120,6 +121,12 @@ export default function StaffPage() {
   const [staffModalOpen, setStaffModalOpen] = useState(false);
   const [roleModalOpen, setRoleModalOpen] = useState(false);
 
+  // Deletion modals state
+  const [isDeleteStaffOpen, setIsDeleteStaffOpen] = useState(false);
+  const [deleteStaffTarget, setDeleteStaffTarget] = useState<{ uid: string; name: string } | null>(null);
+  const [isDeleteRoleOpen, setIsDeleteRoleOpen] = useState(false);
+  const [deleteRoleTarget, setDeleteRoleTarget] = useState<{ id: string; name: string } | null>(null);
+
   // New staff form state
   const [staffForm, setStaffForm] = useState({
     displayName: '',
@@ -190,12 +197,20 @@ export default function StaffPage() {
     }
   };
 
-  const handleDeleteStaff = async (uid: string, name: string) => {
+  const handleDeleteStaffTrigger = (uid: string, name: string) => {
     if (uid === adminUser?.uid) {
       toast.error('You cannot delete your own account.');
       return;
     }
-    if (!window.confirm(`Are you sure you want to delete staff account for "${name}"? This cannot be undone.`)) return;
+    setDeleteStaffTarget({ uid, name });
+    setIsDeleteStaffOpen(true);
+  };
+
+  const handleDeleteStaffConfirm = async () => {
+    if (!deleteStaffTarget) return;
+    const { uid } = deleteStaffTarget;
+    setIsDeleteStaffOpen(false);
+    setDeleteStaffTarget(null);
     try {
       await deleteStaffUser(uid);
       toast.success('Staff account deleted');
@@ -205,10 +220,18 @@ export default function StaffPage() {
     }
   };
 
-  const handleDeleteRole = async (roleId: string, name: string) => {
-    if (!window.confirm(`Are you sure you want to delete the role "${name}"? Staff assigned to this role will lose their custom permissions.`)) return;
+  const handleDeleteRoleTrigger = (roleId: string, name: string) => {
+    setDeleteRoleTarget({ id: roleId, name });
+    setIsDeleteRoleOpen(true);
+  };
+
+  const handleDeleteRoleConfirm = async () => {
+    if (!deleteRoleTarget) return;
+    const { id } = deleteRoleTarget;
+    setIsDeleteRoleOpen(false);
+    setDeleteRoleTarget(null);
     try {
-      await deleteRole(roleId);
+      await deleteRole(id);
       toast.success('Role deleted');
       loadData();
     } catch {
@@ -437,7 +460,7 @@ export default function StaffPage() {
                               <span className="text-xs text-gray-400 italic">Protected</span>
                             ) : (
                               <button
-                                onClick={() => handleDeleteStaff(user.uid, user.displayName)}
+                                onClick={() => handleDeleteStaffTrigger(user.uid, user.displayName)}
                                 className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 rounded-xl text-xs font-bold text-red-600 transition-colors"
                               >
                                 Delete
@@ -509,7 +532,7 @@ export default function StaffPage() {
                       </button>
                       {!role.isSystem && (
                         <button
-                          onClick={() => handleDeleteRole(role.id, role.name)}
+                          onClick={() => handleDeleteRoleTrigger(role.id, role.name)}
                           className="px-3.5 py-1.5 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl text-xs font-bold text-red-600 transition-colors"
                         >
                           🗑️ Delete
@@ -708,6 +731,32 @@ export default function StaffPage() {
           </div>
         </div>
       )}
+      <ConfirmationModal
+        isOpen={isDeleteStaffOpen}
+        title="Delete Staff Account"
+        message={`Are you sure you want to delete staff account for "${deleteStaffTarget?.name}"? This cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        type="danger"
+        onConfirm={handleDeleteStaffConfirm}
+        onCancel={() => {
+          setIsDeleteStaffOpen(false);
+          setDeleteStaffTarget(null);
+        }}
+      />
+      <ConfirmationModal
+        isOpen={isDeleteRoleOpen}
+        title="Delete Role"
+        message={`Are you sure you want to delete the role "${deleteRoleTarget?.name}"? Staff assigned to this role will lose their custom permissions.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        type="danger"
+        onConfirm={handleDeleteRoleConfirm}
+        onCancel={() => {
+          setIsDeleteRoleOpen(false);
+          setDeleteRoleTarget(null);
+        }}
+      />
     </AdminLayout>
   );
 }

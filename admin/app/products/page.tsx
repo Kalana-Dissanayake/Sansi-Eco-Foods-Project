@@ -8,6 +8,7 @@ import AdminLayout from '../../components/layout/AdminLayout';
 import { useAuth } from '../../hooks/useAuth';
 import { getAllProducts, updateProductStock, updateProduct, deleteProduct } from '../../lib/firestore';
 import type { Product } from '../../../shared/types';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
 
 export default function ProductsPage() {
   const { hasPermission } = useAuth();
@@ -15,6 +16,8 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [editingStock, setEditingStock] = useState<{ id: string; value: number } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteProductTarget, setDeleteProductTarget] = useState<Product | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -48,12 +51,19 @@ export default function ProductsPage() {
     }
   };
 
-  const handleDelete = async (product: Product) => {
+  const handleDeleteTrigger = (product: Product) => {
     if (!hasPermission('menu_edit')) return;
-    if (!window.confirm(`Delete "${product.name}"? This cannot be undone.`)) return;
+    setDeleteProductTarget(product);
+    setIsDeleteOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteProductTarget) return;
+    setIsDeleteOpen(false);
     try {
-      await deleteProduct(product.id);
+      await deleteProduct(deleteProductTarget.id);
       toast.success('Product deleted');
+      setDeleteProductTarget(null);
       load();
     } catch {
       toast.error('Failed to delete product');
@@ -193,7 +203,7 @@ export default function ProductsPage() {
                                 Edit
                               </Link>
                               <button
-                                onClick={() => handleDelete(product)}
+                                onClick={() => handleDeleteTrigger(product)}
                                 className="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-medium"
                               >
                                 Delete
@@ -212,6 +222,19 @@ export default function ProductsPage() {
           )}
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={isDeleteOpen}
+        title="Delete Product"
+        message={`Are you sure you want to delete "${deleteProductTarget?.name}"? This cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        type="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => {
+          setIsDeleteOpen(false);
+          setDeleteProductTarget(null);
+        }}
+      />
     </AdminLayout>
   );
 }

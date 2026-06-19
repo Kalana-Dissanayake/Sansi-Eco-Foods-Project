@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import AdminLayout from '../../components/layout/AdminLayout';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import { useAuth } from '../../hooks/useAuth';
 import { getCustomers, updateCustomerNotes, deleteCustomer } from '../../lib/firestore';
 import type { Customer } from '../../../shared/types';
@@ -19,6 +20,8 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingNotes, setEditingNotes] = useState<{ id: string; notes: string } | null>(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -43,11 +46,18 @@ export default function CustomersPage() {
     }
   };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`Are you sure you want to delete customer "${name}"? This cannot be undone.`)) return;
+  const handleDeleteTrigger = (id: string, name: string) => {
+    setDeleteTarget({ id, name });
+    setIsDeleteOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    setIsDeleteOpen(false);
     try {
-      await deleteCustomer(id);
+      await deleteCustomer(deleteTarget.id);
       toast.success('Customer deleted');
+      setDeleteTarget(null);
       load();
     } catch {
       toast.error('Failed to delete customer');
@@ -162,7 +172,7 @@ export default function CustomersPage() {
                           </Link>
                           {hasPermission('customers_edit') && (
                             <button
-                              onClick={() => handleDelete(customer.id, customer.name)}
+                              onClick={() => handleDeleteTrigger(customer.id, customer.name)}
                               className="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-medium"
                             >
                               Delete
@@ -178,6 +188,19 @@ export default function CustomersPage() {
           )}
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={isDeleteOpen}
+        title="Delete Customer"
+        message={`Are you sure you want to delete customer "${deleteTarget?.name}"? This cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        type="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => {
+          setIsDeleteOpen(false);
+          setDeleteTarget(null);
+        }}
+      />
     </AdminLayout>
   );
 }

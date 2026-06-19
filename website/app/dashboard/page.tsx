@@ -9,6 +9,7 @@ import type { Order, DeliveryAddress } from '../../../shared/types';
 import toast from 'react-hot-toast';
 import Spinner from '../../components/ui/Spinner';
 import Image from 'next/image';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
 
 const DISTRICTS = Object.keys(DISTRICT_PROVINCE_MAP).sort();
 
@@ -30,6 +31,8 @@ export default function DashboardPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [cancellationReason, setCancellationReason] = useState('');
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
+  const [orderIdToCancel, setOrderIdToCancel] = useState<string | null>(null);
 
   // Active Tab: 'orders' | 'profile'
   const [activeTab, setActiveTab] = useState<'orders' | 'profile'>('orders');
@@ -109,16 +112,21 @@ export default function DashboardPage() {
     }
   };
 
-  // Handle Order Cancellation
-  const handleCancelOrder = async (orderId: string) => {
-    if (!confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
-      return;
-    }
+  // Trigger Order Cancellation Modal
+  const triggerCancelConfirm = (orderId: string) => {
+    setOrderIdToCancel(orderId);
+    setIsCancelConfirmOpen(true);
+  };
+
+  const handleCancelOrder = async () => {
+    if (!orderIdToCancel) return;
+    setIsCancelConfirmOpen(false);
 
     setIsCancelling(true);
     const reason = cancellationReason.trim() || 'Cancelled by customer';
-    const result = await cancelOrder(orderId, reason);
+    const result = await cancelOrder(orderIdToCancel, reason);
     setIsCancelling(false);
+    setOrderIdToCancel(null);
 
     if (result.success) {
       toast.success('Order cancelled successfully.');
@@ -585,7 +593,7 @@ export default function DashboardPage() {
                       />
                     </div>
                     <button
-                      onClick={() => handleCancelOrder(selectedOrder.id)}
+                      onClick={() => triggerCancelConfirm(selectedOrder.id)}
                       disabled={isCancelling}
                       className="btn btn-sm btn-danger px-4 rounded-pill"
                       style={{ fontWeight: 600 }}
@@ -617,6 +625,20 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      <ConfirmationModal
+        isOpen={isCancelConfirmOpen}
+        title="Cancel Order"
+        message="Are you sure you want to cancel this order? This action cannot be undone."
+        confirmLabel="Yes, Cancel"
+        cancelLabel="No, Keep"
+        type="danger"
+        onConfirm={handleCancelOrder}
+        onCancel={() => {
+          setIsCancelConfirmOpen(false);
+          setOrderIdToCancel(null);
+        }}
+      />
     </section>
   );
 }
