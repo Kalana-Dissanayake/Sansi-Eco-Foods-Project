@@ -62,6 +62,7 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 # Set up a free service & template on https://www.emailjs.com/
 NEXT_PUBLIC_EMAILJS_SERVICE_ID=your_emailjs_service_id
 NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=your_emailjs_template_id
+NEXT_PUBLIC_EMAILJS_OTP_TEMPLATE_ID=your_emailjs_otp_template_id
 NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=your_emailjs_public_key
 ```
 
@@ -164,6 +165,7 @@ Upon first login, the application will automatically seed initial data, includin
 
 ## Step 5: EmailJS Template Configuration
 
+### 1. Order Confirmation Emails
 To receive order confirmations via email:
 1. Create a free account at [EmailJS](https://www.emailjs.com/).
 2. Create an Email Service connected to your email account (Gmail, etc.).
@@ -179,4 +181,14 @@ To receive order confirmations via email:
    - `{{shipping_fee}}` – Shipping fee in LKR
    - `{{discount}}` – Applied coupon discount (if any)
    - `{{total}}` – Total amount payable
-4. Copy the service ID, template ID, and public key into `website/.env.local`.
+4. Copy the template ID into `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID` in `website/.env.local`.
+
+### 2. Registration OTP Verification Emails
+To verify customer email addresses during registration:
+1. Create another Email Template in your EmailJS service.
+2. Design the template to contain the following placeholders:
+   - `{{email}}` – Customer's email address
+   - `{{passcode}}` – The 6-digit OTP code (passcode)
+   - `{{time}}` – Expiration time text (e.g., "15 minutes")
+   - `{{logo_url}}` – URL of the Sansi Eco Foods logo (renders the brand logo dynamically)
+3. Copy the new template ID into `NEXT_PUBLIC_EMAILJS_OTP_TEMPLATE_ID` in `website/.env.local`.

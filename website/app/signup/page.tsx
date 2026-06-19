@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../context/AuthContext';
 import { DISTRICT_PROVINCE_MAP } from '../../../shared/types';
 import toast from 'react-hot-toast';
 import Spinner from '../../components/ui/Spinner';
+import { isEmailRegistered } from '../../lib/firestore';
+import { sendOTP } from '../../lib/emailjs';
 
 const DISTRICTS = Object.keys(DISTRICT_PROVINCE_MAP).sort();
 const SRI_LANKA_PHONE_REGEX = /^0[1-9][0-9]{8}$/;
@@ -22,10 +24,31 @@ function SignupForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // OTP Verification Wizard States
+  const [step, setStep] = useState<'form' | 'otp'>('form');
+  const [otpValues, setOtpValues] = useState<string[]>(['', '', '', '', '', '']);
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [otpCreatedAt, setOtpCreatedAt] = useState<number>(0);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [isResending, setIsResending] = useState(false);
+
   const { signUp } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/dashboard';
+
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Count down resend timer
+  useEffect(() => {
+    if (step !== 'otp' || resendCooldown <= 0) return;
+
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [step, resendCooldown]);
 
   const validate = (): boolean => {
     if (!name.trim()) {
@@ -59,9 +82,54 @@ function SignupForm() {
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
+
+    setIsSubmitting(true);
+    try {
+      const isRegistered = await isEmailRegistered(email.trim());
+      if (isRegistered) {
+        toast.error('An account already exists with this email address.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Generate a 6-digit random code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      await sendOTP(email.trim(), code);
+
+      setGeneratedOtp(code);
+      setOtpCreatedAt(Date.now());
+      setOtpValues(['', '', '', '', '', '']);
+      setResendCooldown(60);
+      setStep('otp');
+      toast.success('Verification code sent to your email!');
+    } catch (err: any) {
+      console.error('Failed to send OTP:', err);
+      toast.error('Failed to send verification email. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    const code = otpValues.join('');
+    if (code.length !== 6) {
+      toast.error('Please enter the full 6-digit verification code.');
+      return;
+    }
+
+    if (code !== generatedOtp) {
+      toast.error('Invalid verification code. Please try again.');
+      return;
+    }
+
+    // Expiry check: 15 minutes = 900,000 ms
+    if (Date.now() - otpCreatedAt > 900000) {
+      toast.error('Verification code has expired. Please request a new one.');
+      return;
+    }
 
     setIsSubmitting(true);
     const address = {
@@ -75,15 +143,161 @@ function SignupForm() {
     setIsSubmitting(false);
 
     if (result.success) {
-      toast.success('Account created successfully!');
+      toast.success('Account created and verified successfully!');
       router.push(redirect);
     } else {
       toast.error(result.error || 'Failed to create account.');
+      if (result.error?.toLowerCase().includes('already exists') || result.error?.toLowerCase().includes('in-use')) {
+        setStep('form');
+      }
     }
   };
 
+  const handleResendOtp = async () => {
+    try {
+      setIsResending(true);
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      await sendOTP(email.trim(), code);
+
+      setGeneratedOtp(code);
+      setOtpCreatedAt(Date.now());
+      setOtpValues(['', '', '', '', '', '']);
+      setResendCooldown(60);
+      toast.success('A new verification code has been sent to your email.');
+    } catch (err: any) {
+      console.error('Failed to resend OTP:', err);
+      toast.error('Failed to resend verification email. Please try again.');
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  const handleOtpChange = (value: string, index: number) => {
+    if (value && !/^\d+$/.test(value)) return;
+
+    const newValues = [...otpValues];
+    const char = value.slice(-1);
+    newValues[index] = char;
+    setOtpValues(newValues);
+
+    if (char && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === 'Backspace') {
+      const newValues = [...otpValues];
+      if (otpValues[index]) {
+        newValues[index] = '';
+        setOtpValues(newValues);
+      } else if (index > 0) {
+        newValues[index - 1] = '';
+        setOtpValues(newValues);
+        inputRefs.current[index - 1]?.focus();
+      }
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').trim();
+    if (/^\d{6}$/.test(pastedData)) {
+      const chars = pastedData.split('');
+      setOtpValues(chars);
+      inputRefs.current[5]?.focus();
+    }
+  };
+
+  if (step === 'otp') {
+    return (
+      <div className="p-4 bg-white rounded-3 shadow-sm animate__animated animate__fadeIn" style={{ border: '1px solid var(--gray-200)' }}>
+        <h5 className="mb-3 text-dark text-center" style={{ fontWeight: 700 }}>Verify Your Email</h5>
+        <p className="text-muted text-center mb-4" style={{ fontSize: '14px', lineHeight: '1.5' }}>
+          We have sent a 6-digit passcode to <strong style={{ color: 'var(--primary)' }}>{email}</strong>.
+          Please enter the code below to complete registration.
+        </p>
+
+        {/* 6 Digit Inputs */}
+        <div className="d-flex justify-content-center gap-2 mb-4">
+          {otpValues.map((val, idx) => (
+            <input
+              key={idx}
+              ref={(el) => { inputRefs.current[idx] = el; }}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={1}
+              value={val}
+              onChange={(e) => handleOtpChange(e.target.value, idx)}
+              onKeyDown={(e) => handleOtpKeyDown(e, idx)}
+              onPaste={handleOtpPaste}
+              className="form-control text-center"
+              style={{
+                width: '45px',
+                height: '52px',
+                fontSize: '22px',
+                fontWeight: '700',
+                borderRadius: '10px',
+                border: val ? '2px solid #00d26a' : '2px solid #ced4da',
+                boxShadow: val ? '0 0 8px rgba(0, 210, 106, 0.25)' : 'none',
+                transition: 'all 0.2s ease-in-out',
+                color: 'var(--dark)'
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Verification & Actions */}
+        <button
+          type="button"
+          onClick={handleVerifyOtp}
+          disabled={isSubmitting}
+          className="btn btn-primary w-100 py-2.5 mb-3"
+          style={{ borderRadius: '30px', fontWeight: 700, fontSize: '15px' }}
+        >
+          {isSubmitting ? (
+            <span className="d-flex align-items-center justify-content-center gap-2">
+              <Spinner size="sm" color="#fff" />
+              Verifying & Registering...
+            </span>
+          ) : (
+            'Verify & Create Account'
+          )}
+        </button>
+
+        <div className="d-flex justify-content-between align-items-center mt-3" style={{ fontSize: '14px' }}>
+          {resendCooldown > 0 ? (
+            <span className="text-muted">
+              Resend code in <strong>{resendCooldown}s</strong>
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={handleResendOtp}
+              disabled={isResending}
+              className="btn btn-link p-0 text-decoration-none"
+              style={{ color: 'var(--primary)', fontWeight: 600 }}
+            >
+              {isResending ? 'Resending...' : 'Resend Passcode'}
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setStep('form')}
+            className="btn btn-link p-0 text-decoration-none text-secondary"
+            style={{ fontWeight: 600 }}
+          >
+            Back to Edit
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="p-4 bg-white rounded-3 shadow-sm" style={{ border: '1px solid var(--gray-200)' }}>
+    <form onSubmit={handleSendOtp} className="p-4 bg-white rounded-3 shadow-sm" style={{ border: '1px solid var(--gray-200)' }}>
       {/* Name */}
       <div className="mb-3">
         <label htmlFor="signup-name" className="form-label" style={{ fontWeight: 600 }}>Full Name</label>
@@ -220,7 +434,7 @@ function SignupForm() {
         {isSubmitting ? (
           <span className="d-flex align-items-center justify-content-center gap-2">
             <Spinner size="sm" color="#fff" />
-            Creating Account...
+            Sending Code...
           </span>
         ) : (
           'Register Account'

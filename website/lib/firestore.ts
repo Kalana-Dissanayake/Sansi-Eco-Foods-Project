@@ -395,6 +395,21 @@ export async function createOrder(
 
 // ─── Customer Helpers ────────────────────────────────────────────────────────
 
+export async function isEmailRegistered(email: string): Promise<boolean> {
+  try {
+    const q = query(
+      collection(db, 'customers'),
+      where('email', '==', email.toLowerCase().trim()),
+      limit(1)
+    );
+    const snap = await getDocs(q);
+    return !snap.empty;
+  } catch (error) {
+    console.error('Error checking if email exists:', error);
+    return false;
+  }
+}
+
 export async function getCustomerProfile(uid: string): Promise<Customer | null> {
   try {
     const snap = await getDoc(doc(db, 'customers', uid));

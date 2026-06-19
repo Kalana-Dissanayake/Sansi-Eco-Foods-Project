@@ -67,6 +67,7 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 # EmailJS Keys
 NEXT_PUBLIC_EMAILJS_SERVICE_ID=your_service_id
 NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=your_template_id
+NEXT_PUBLIC_EMAILJS_OTP_TEMPLATE_ID=your_otp_template_id
 NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=your_public_key
 ```
 
