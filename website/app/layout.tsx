@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Lora, Open_Sans } from 'next/font/google';
 import Script from 'next/script';
 import { Toaster } from 'react-hot-toast';
+import { Analytics } from '@vercel/analytics/next';
 import { AuthProvider } from '../context/AuthContext';
 import { CartProvider } from '../context/CartContext';
 import AnnouncementBar from '../components/layout/AnnouncementBar';
@@ -154,6 +155,8 @@ export default async function RootLayout({
             />
           </CartProvider>
         </AuthProvider>
+
+        <Analytics />
 
         {/* Bootstrap 5 JS */}
         <Script
