@@ -200,23 +200,62 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
           </div>
         </div>
 
-        {/* Add to Cart */}
-        <div className="d-flex gap-3 mb-4 flex-wrap">
+        {/* Add to Cart & View Cart */}
+        <div className="d-flex align-items-center gap-3 mb-4 flex-wrap flex-sm-nowrap" style={{ maxWidth: '450px' }}>
           <button
-            className="btn btn-primary px-5 py-2"
-            style={{ borderRadius: '30px', fontWeight: 700, fontSize: '16px', flex: 1, maxWidth: '300px' }}
+            className="btn btn-primary px-4 py-2.5 d-flex align-items-center justify-content-center gap-2"
+            style={{
+              borderRadius: '30px',
+              fontWeight: 700,
+              fontSize: '15px',
+              flex: 2,
+              height: '48px',
+              transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: '0 4px 14px rgba(0, 210, 106, 0.25)',
+            }}
             onClick={handleAddToCart}
             disabled={!product.inStock}
+            onMouseEnter={(e) => {
+              if (product.inStock) {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 210, 106, 0.35)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'none';
+              e.currentTarget.style.boxShadow = '0 4px 14px rgba(0, 210, 106, 0.25)';
+            }}
           >
             {product.inStock ? (
-              <><i className="fas fa-shopping-bag me-2"></i>Add to Cart</>
-            ) : 'Out of Stock'}
+              <>
+                <i className="fas fa-shopping-bag" style={{ fontSize: '15px' }}></i>
+                Add to Cart
+              </>
+            ) : (
+              'Out of Stock'
+            )}
           </button>
           <Link
             href="/cart"
-            className="btn btn-outline-primary px-4 py-2"
-            style={{ borderRadius: '30px', fontWeight: 600 }}
+            className="btn btn-outline-primary px-4 py-2.5 d-flex align-items-center justify-content-center gap-2"
+            style={{
+              borderRadius: '30px',
+              fontWeight: 600,
+              fontSize: '15px',
+              flex: 1.2,
+              height: '48px',
+              transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(74, 124, 89, 0.12)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'none';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
           >
+            <i className="fas fa-shopping-cart" style={{ fontSize: '15px' }}></i>
             View Cart
           </Link>
         </div>

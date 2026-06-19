@@ -12,6 +12,7 @@ export default function Navbar() {
   const { user } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [cartBump, setCartBump] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -57,7 +58,7 @@ export default function Navbar() {
         zIndex: 1050,
       }}
     >
-      <Link href="/" className="navbar-brand d-flex align-items-center">
+      <Link href="/" onClick={() => setIsOpen(false)} className="navbar-brand d-flex align-items-center">
         <img
           src="/images/sansi-logo.png"
           alt="Sansi Eco Foods Logo"
@@ -85,21 +86,21 @@ export default function Navbar() {
       <button
         className="navbar-toggler"
         type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarCollapse"
+        onClick={() => setIsOpen(!isOpen)}
         aria-controls="navbarCollapse"
-        aria-expanded="false"
+        aria-expanded={isOpen}
         aria-label="Toggle navigation"
       >
         <span className="navbar-toggler-icon"></span>
       </button>
 
-      <div className="collapse navbar-collapse" id="navbarCollapse">
+      <div className={`collapse navbar-collapse ${isOpen ? 'show' : ''}`} id="navbarCollapse">
         <ul className="navbar-nav ms-auto py-0">
           {navLinks.map(({ href, label }) => (
             <li key={href} className="nav-item">
               <Link
                 href={href}
+                onClick={() => setIsOpen(false)}
                 className={`nav-link px-3 ${isActive(href) ? 'active' : ''}`}
                 style={{ fontWeight: isActive(href) ? 600 : 500 }}
               >
@@ -113,6 +114,7 @@ export default function Navbar() {
           {/* Cart */}
           <Link
             href="/cart"
+            onClick={() => setIsOpen(false)}
             className="position-relative"
             aria-label={`Shopping cart with ${itemCount} items`}
             style={{ textDecoration: 'none' }}
