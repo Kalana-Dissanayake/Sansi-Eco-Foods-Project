@@ -132,7 +132,7 @@ export default function Navbar() {
             </div>
             {itemCount > 0 && (
               <span
-                className="position-absolute top-0 start-100 translate-middle badge rounded-pill"
+                className="position-absolute badge rounded-pill"
                 style={{
                   backgroundColor: 'var(--secondary)',
                   fontSize: '10px',
@@ -142,6 +142,8 @@ export default function Navbar() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontWeight: 700,
+                  top: '0px',
+                  right: '-6px',
                 }}
               >
                 {itemCount > 99 ? '99+' : itemCount}

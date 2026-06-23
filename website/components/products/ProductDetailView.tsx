@@ -159,17 +159,17 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
         </div>
 
         {/* Price */}
-        <div className="mb-4">
+        <div className="d-flex align-items-center gap-3 flex-wrap mb-4">
           <span style={{ fontSize: '32px', fontWeight: 800, color: 'var(--primary)', fontFamily: 'var(--font-heading)' }}>
             Rs. {product.priceLKR.toLocaleString()}
           </span>
           {product.compareAtPriceLKR > product.priceLKR && (
-            <span className="ms-2" style={{ fontSize: '18px', color: '#aaa', textDecoration: 'line-through' }}>
+            <span style={{ fontSize: '18px', color: '#aaa', textDecoration: 'line-through' }}>
               Rs. {product.compareAtPriceLKR.toLocaleString()}
             </span>
           )}
           {product.compareAtPriceLKR > product.priceLKR && (
-            <span className="ms-2 badge" style={{ background: '#e74c3c', color: '#fff', fontSize: '12px' }}>
+            <span className="badge px-2.5 py-1.5" style={{ background: '#e74c3c', color: '#fff', fontSize: '12px', borderRadius: '4px', fontWeight: 600 }}>
               Save Rs. {(product.compareAtPriceLKR - product.priceLKR).toLocaleString()}
             </span>
           )}
