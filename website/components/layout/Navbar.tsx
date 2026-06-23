@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
+import { getCategories } from '../../lib/firestore';
+import type { Category } from '../../../shared/types';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -13,6 +15,10 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [cartBump, setCartBump] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+
+  // Dynamic categories hover list
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -30,22 +36,35 @@ export default function Navbar() {
     return () => window.removeEventListener('cart:updated', handleCartUpdate);
   }, []);
 
+  // Fetch categories on mount
+  useEffect(() => {
+    let active = true;
+    getCategories().then((data) => {
+      if (active) setCategories(data);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
     return pathname.startsWith(href);
   };
 
-  const navLinks = [
+  const primaryLinks = [
     { href: '/', label: 'Home' },
-    { href: '/products', label: 'Products' },
+  ];
+
+  const secondaryLinks = [
     { href: '/about', label: 'About Us' },
     { href: '/contact', label: 'Contact Us' },
   ];
 
   if (user) {
-    navLinks.push({ href: '/dashboard', label: 'Dashboard' });
+    secondaryLinks.push({ href: '/dashboard', label: 'Dashboard' });
   } else {
-    navLinks.push({ href: '/login', label: 'Sign In' });
+    secondaryLinks.push({ href: '/login', label: 'Sign In' });
   }
 
   return (
@@ -96,7 +115,95 @@ export default function Navbar() {
 
       <div className={`collapse navbar-collapse ${isOpen ? 'show' : ''}`} id="navbarCollapse">
         <ul className="navbar-nav ms-auto py-0">
-          {navLinks.map(({ href, label }) => (
+          {primaryLinks.map(({ href, label }) => (
+            <li key={href} className="nav-item">
+              <Link
+                href={href}
+                onClick={() => setIsOpen(false)}
+                className={`nav-link px-3 ${isActive(href) ? 'active' : ''}`}
+                style={{ fontWeight: isActive(href) ? 600 : 500 }}
+              >
+                {label}
+              </Link>
+            </li>
+          ))}
+
+          {/* Products Dropdown Nav Item */}
+          <li
+            className="nav-item dropdown"
+            onMouseEnter={() => setIsDropdownOpen(true)}
+            onMouseLeave={() => setIsDropdownOpen(false)}
+          >
+            <Link
+              href="/products"
+              onClick={(e) => {
+                if (window.innerWidth < 992) {
+                  e.preventDefault();
+                  setIsDropdownOpen(!isDropdownOpen);
+                } else {
+                  setIsOpen(false);
+                }
+              }}
+              className={`nav-link px-3 d-flex align-items-center gap-1 ${isActive('/products') ? 'active' : ''}`}
+              style={{ fontWeight: isActive('/products') ? 600 : 500 }}
+            >
+              Products
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{
+                  transition: 'transform 0.25s ease',
+                  transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  flexShrink: 0,
+                }}
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </Link>
+            <ul
+              className={`dropdown-menu border-0 shadow-sm ${isDropdownOpen ? 'show' : ''}`}
+              style={{
+                borderRadius: '8px',
+                padding: '8px 0',
+              }}
+            >
+              <li>
+                <Link
+                  href="/products"
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    setIsOpen(false);
+                  }}
+                  className="dropdown-item py-2 px-4"
+                >
+                  All Products
+                </Link>
+              </li>
+              {categories.map((cat) => (
+                <li key={cat.id}>
+                  <Link
+                    href={`/products?category=${cat.id}`}
+                    onClick={() => {
+                      setIsDropdownOpen(false);
+                      setIsOpen(false);
+                    }}
+                    className="dropdown-item py-2 px-4"
+                  >
+                    {cat.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </li>
+
+          {secondaryLinks.map(({ href, label }) => (
             <li key={href} className="nav-item">
               <Link
                 href={href}

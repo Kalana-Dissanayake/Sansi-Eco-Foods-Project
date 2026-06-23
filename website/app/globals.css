@@ -655,3 +655,62 @@ img { max-width: 100%; }
     transform: translateY(0);
   }
 }
+
+/* ─── Filter Offcanvas Drawer ─────────────────────────────────── */
+.filter-drawer-open {
+  animation: filterSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes filterSlideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* ─── Navbar Dropdown Hover & Animations ────────────────────── */
+
+/* Suppress Bootstrap's default caret — we use a custom SVG chevron */
+.navbar .nav-link::after {
+  display: none !important;
+}
+
+.navbar .dropdown-menu {
+  display: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+@media (min-width: 992px) {
+  .navbar .nav-item.dropdown:hover .dropdown-menu {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.navbar .dropdown-menu.show {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.navbar .dropdown-item {
+  color: var(--dark);
+  font-weight: 500;
+  font-size: 14.5px;
+  transition: var(--transition);
+}
+
+.navbar .dropdown-item:hover,
+.navbar .dropdown-item:focus {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
