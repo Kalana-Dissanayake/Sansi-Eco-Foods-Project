@@ -40,6 +40,7 @@ const SECTIONS: NavSection[] = [
     items: [
       { href: '/orders', label: 'Orders', icon: '📦', permission: 'orders_view', badgeType: 'orders' },
       { href: '/products', label: 'Products', icon: '🛍️', permission: 'menu_view' },
+      { href: '/categories', label: 'Categories', icon: '🏷️', permission: 'menu_view' },
       { href: '/customers', label: 'Customers', icon: '👥', permission: 'customers_view' },
       { href: '/staff', label: 'Staff & Roles', icon: '🔑', permission: 'staff_manage' },
     ],
@@ -95,6 +96,9 @@ export default function AdminSidebar({ pendingOrders = 0, userName }: AdminSideb
     if (pathname === itemHref) return true;
     if (itemHref === '/orders') {
       return pathname.startsWith('/orders/');
+    }
+    if (itemHref === '/categories') {
+      return pathname.startsWith('/categories');
     }
     if (itemHref !== '/dashboard') {
       return pathname.startsWith(itemHref + '/');

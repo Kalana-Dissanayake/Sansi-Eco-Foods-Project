@@ -109,7 +109,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <AdminLayout title="Dashboard" pendingOrders={stats.pendingOrders} requiredPermission="dashboard_view">
+    <AdminLayout title="Dashboard" description="Overview of your store's key metrics and recent activity." pendingOrders={stats.pendingOrders} requiredPermission="dashboard_view">
       {loading ? (
         <div className="flex items-center justify-center py-24">
           <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>

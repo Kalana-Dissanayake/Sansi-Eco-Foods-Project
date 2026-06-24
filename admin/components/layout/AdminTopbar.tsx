@@ -8,11 +8,12 @@ import toast from 'react-hot-toast';
 
 interface AdminTopbarProps {
   title: string;
+  description?: string;
   pendingOrders?: number;
   userName?: string;
 }
 
-export default function AdminTopbar({ title, pendingOrders = 0, userName }: AdminTopbarProps) {
+export default function AdminTopbar({ title, description, pendingOrders = 0, userName }: AdminTopbarProps) {
   const [unreadMessages, setUnreadMessages] = useState<any[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -67,7 +68,7 @@ export default function AdminTopbar({ title, pendingOrders = 0, userName }: Admi
     <header className="bg-white/80 backdrop-blur-md border-b border-slate-100 px-6 py-4 flex items-center justify-between sticky top-0 z-20 font-sans">
       <div>
         <h1 className="text-lg font-bold text-slate-800 leading-tight">{title}</h1>
-        <p className="text-[10px] text-slate-400 font-medium">Welcome back — here's what's happening</p>
+        {description && <p className="text-[10px] text-slate-400 font-medium">{description}</p>}
       </div>
 
       <div className="flex items-center gap-4">

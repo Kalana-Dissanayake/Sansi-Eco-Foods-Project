@@ -12,6 +12,7 @@ import type { RolePermissions } from '../../../shared/types';
 interface AdminLayoutProps {
   children: React.ReactNode;
   title?: string;
+  description?: string;
   pendingOrders?: number;
   requiredPermission?: keyof RolePermissions;
 }
@@ -19,6 +20,7 @@ interface AdminLayoutProps {
 export default function AdminLayout({
   children,
   title = 'Dashboard',
+  description,
   pendingOrders = 0,
   requiredPermission,
 }: AdminLayoutProps) {
@@ -55,6 +57,7 @@ export default function AdminLayout({
       <div className="lg:ml-64 pb-16 lg:pb-0">
         <AdminTopbar
           title={hasAccess ? title : 'Access Denied'}
+          description={hasAccess ? description : undefined}
           pendingOrders={pendingOrders}
           userName={adminUser?.displayName ?? adminUser?.email}
         />

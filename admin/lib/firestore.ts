@@ -235,6 +235,14 @@ export async function createCategory(data: Omit<Category, 'id'>): Promise<string
   return ref.id;
 }
 
+export async function updateCategory(id: string, data: Partial<Omit<Category, 'id'>>): Promise<void> {
+  await updateDoc(doc(db, 'categories', id), data);
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'categories', id));
+}
+
 // ─── Customers ────────────────────────────────────────────────────────────────
 
 export async function getCustomers(): Promise<Customer[]> {

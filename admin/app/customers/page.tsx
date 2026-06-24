@@ -73,10 +73,9 @@ export default function CustomersPage() {
     : customers;
 
   return (
-    <AdminLayout title="Customers" requiredPermission="customers_view">
+    <AdminLayout title="Customers" description="View and manage your customer database, order history, and notes." requiredPermission="customers_view">
       <div className="space-y-4 font-sans">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h2 className="text-2xl font-bold text-gray-800">Customers</h2>
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-500">{customers.length} customers total</span>
             <input

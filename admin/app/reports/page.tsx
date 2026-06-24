@@ -142,20 +142,13 @@ export default function ReportsPage() {
   }, []);
 
   return (
-    <AdminLayout title="Reports & Charts" requiredPermission="reports_view">
+    <AdminLayout title="Reports & Charts" description="Analyse order trends, revenue performance, and best-selling products." requiredPermission="reports_view">
       {loading ? (
         <div className="flex items-center justify-center py-24">
           <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
         </div>
       ) : (
         <div className="space-y-6 font-sans">
-          {/* Header */}
-          <div>
-            <h2 className="text-xl font-bold text-slate-800">Performance Analytics</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Track and evaluate order volumes, revenue, and product sales.</p>
-          </div>
-
-          {/* Metric Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
               { label: 'Total Sales Revenue', value: `Rs. ${totalRevenue.toLocaleString()}`, desc: 'From delivered orders', color: 'bg-indigo-600', icon: '💰' },

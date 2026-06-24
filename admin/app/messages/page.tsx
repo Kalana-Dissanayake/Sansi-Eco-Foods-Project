@@ -129,14 +129,10 @@ export default function MessagesPage() {
   const unreadCount = messages.filter((m) => !m.read).length;
 
   return (
-    <AdminLayout title="Messages & Inquiries" requiredPermission="messages_view">
+    <AdminLayout title="Messages & Inquiries" description="Read and respond to customer inquiries submitted through the contact form." requiredPermission="messages_view">
       <div className="space-y-6 font-sans h-[calc(100vh-140px)] flex flex-col">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 flex-shrink-0">
-          <div>
-            <h2 className="text-xl font-bold text-slate-800">Messages Inbox</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Manage customer inquiries and feedback received from the store site.</p>
-          </div>
           <div className="flex bg-white p-1 rounded-xl border border-slate-100 shadow-sm self-start text-xs font-bold">
             <button
               onClick={() => setFilterTab('unread')}

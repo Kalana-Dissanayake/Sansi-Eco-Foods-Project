@@ -357,13 +357,9 @@ export default function StaffPage() {
   };
 
   return (
-    <AdminLayout title="Staff & Roles" requiredPermission="staff_manage">
+    <AdminLayout title="Staff & Roles" description="Manage staff accounts, assign roles, and configure module-level permissions." requiredPermission="staff_manage">
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800">Staff & Roles</h2>
-            <p className="text-sm text-gray-500 mt-1">Manage staff user logins and custom role definitions.</p>
-          </div>
           <button
             onClick={() => {
               if (activeTab === 'staff') {

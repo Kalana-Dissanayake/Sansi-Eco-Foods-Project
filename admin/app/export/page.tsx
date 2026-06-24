@@ -156,14 +156,8 @@ export default function ExportDataPage() {
   };
 
   return (
-    <AdminLayout title="Export Data" requiredPermission="export_view">
+    <AdminLayout title="Export Data" description="Download database collections as formatted CSV files directly to your browser." requiredPermission="export_view">
       <div className="space-y-6 font-sans">
-        {/* Header */}
-        <div>
-          <h2 className="text-xl font-bold text-slate-800">Export Databases</h2>
-          <p className="text-xs text-slate-400 mt-0.5">Download database sheets as formatted CSV tables directly in your browser.</p>
-        </div>
-
         {loading ? (
           <div className="flex items-center justify-center py-24">
             <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>

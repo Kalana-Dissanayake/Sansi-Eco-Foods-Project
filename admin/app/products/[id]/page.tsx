@@ -234,11 +234,10 @@ export default function ProductFormPage() {
 
 
   return (
-    <AdminLayout title={isNew ? 'Add New Product' : 'Edit Product'}>
+    <AdminLayout title={isNew ? 'Add New Product' : 'Edit Product'} description={isNew ? 'Fill in the details below to add a new product to your catalog.' : 'Update the product information and save your changes.'}>
       <div className="max-w-4xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">{isNew ? 'Add New Product' : 'Edit Product'}</h2>
+        <div className="flex items-center justify-end mb-6">
           <div className="flex gap-2">
             <button
               onClick={() => router.push('/products')}

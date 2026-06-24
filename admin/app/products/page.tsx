@@ -77,10 +77,9 @@ export default function ProductsPage() {
   const canEditStock = hasPermission('menu_toggle_stock') || hasPermission('menu_edit');
 
   return (
-    <AdminLayout title="Products" requiredPermission="menu_view">
+    <AdminLayout title="Products" description="Manage your product catalog — add, edit, or update inventory and availability." requiredPermission="menu_view">
       <div className="space-y-4 font-sans">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h2 className="text-2xl font-bold text-gray-800">Products</h2>
           <div className="flex gap-2">
             <input
               type="search"
@@ -111,9 +110,9 @@ export default function ProductsPage() {
               <p>No products found</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto overflow-y-auto max-h-[60vh]">
               <table className="w-full text-sm">
-                <thead>
+                <thead className="sticky top-0 z-10">
                   <tr className="bg-gray-50 border-b border-gray-100">
                     {['Product', 'SKU', 'Price', 'Stock', 'Status', 'Actions'].map((h) => (
                       <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">

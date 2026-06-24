@@ -92,10 +92,9 @@ export default function SettingsPage() {
   }
 
   return (
-    <AdminLayout title="Settings" requiredPermission="settings_manage">
+    <AdminLayout title="Settings" description="Configure store-wide settings including announcements, shipping rates, and social links." requiredPermission="settings_manage">
       <div className="max-w-3xl font-sans">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Site Settings</h2>
+        <div className="flex items-center justify-end mb-6">
           <button
             onClick={handleSave}
             disabled={saving}
