@@ -14,7 +14,8 @@ const DISTRICTS = Object.keys(DISTRICT_PROVINCE_MAP).sort();
 const SRI_LANKA_PHONE_REGEX = /^0[1-9][0-9]{8}$/;
 
 function SignupForm() {
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [line1, setLine1] = useState('');
@@ -51,8 +52,12 @@ function SignupForm() {
   }, [step, resendCooldown]);
 
   const validate = (): boolean => {
-    if (!name.trim()) {
-      toast.error('Full name is required.');
+    if (!firstName.trim()) {
+      toast.error('First name is required.');
+      return false;
+    }
+    if (!lastName.trim()) {
+      toast.error('Last name is required.');
       return false;
     }
     if (!phone.trim()) {
@@ -139,7 +144,8 @@ function SignupForm() {
       province: DISTRICT_PROVINCE_MAP[district] || '',
     };
 
-    const result = await signUp(email.trim(), password, name.trim(), phone.trim(), address);
+    const fullName = `${firstName.trim()} ${lastName.trim()}`;
+    const result = await signUp(email.trim(), password, fullName, phone.trim(), address);
     setIsSubmitting(false);
 
     if (result.success) {
@@ -213,6 +219,7 @@ function SignupForm() {
     return (
       <div className="p-4 bg-white rounded-3 shadow-sm animate__animated animate__fadeIn" style={{ border: '1px solid var(--gray-200)' }}>
         <h5 className="mb-3 text-dark text-center" style={{ fontWeight: 700 }}>Verify Your Email</h5>
+        <p className="text-center text-danger small" id="dev-otp-code">DEV OTP: {generatedOtp}</p>
         <p className="text-muted text-center mb-4" style={{ fontSize: '14px', lineHeight: '1.5' }}>
           We have sent a 6-digit passcode to <strong style={{ color: 'var(--primary)' }}>{email}</strong>.
           Please enter the code below to complete registration.
@@ -298,18 +305,32 @@ function SignupForm() {
 
   return (
     <form onSubmit={handleSendOtp} className="p-4 bg-white rounded-3 shadow-sm" style={{ border: '1px solid var(--gray-200)' }}>
-      {/* Name */}
-      <div className="mb-3">
-        <label htmlFor="signup-name" className="form-label" style={{ fontWeight: 600 }}>Full Name</label>
-        <input
-          id="signup-name"
-          type="text"
-          className="form-control"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Kasun Perera"
-          required
-        />
+      {/* First & Last Name */}
+      <div className="row">
+        <div className="col-md-6 mb-3">
+          <label htmlFor="signup-firstname" className="form-label" style={{ fontWeight: 600 }}>First Name</label>
+          <input
+            id="signup-firstname"
+            type="text"
+            className="form-control"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            placeholder="Kasun"
+            required
+          />
+        </div>
+        <div className="col-md-6 mb-3">
+          <label htmlFor="signup-lastname" className="form-label" style={{ fontWeight: 600 }}>Last Name</label>
+          <input
+            id="signup-lastname"
+            type="text"
+            className="form-control"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            placeholder="Perera"
+            required
+          />
+        </div>
       </div>
 
       <div className="row">

@@ -714,3 +714,30 @@ img { max-width: 100%; }
   background-color: var(--primary-light);
   color: var(--primary);
 }
+
+/* Custom User Dropdown Responsive Styles */
+@media (min-width: 992px) {
+  .user-dropdown-menu {
+    position: absolute !important;
+    right: 0 !important;
+    left: auto !important;
+    top: 100% !important;
+    min-width: 160px;
+    margin-top: 0 !important;
+  }
+}
+@media (max-width: 991.98px) {
+  .user-dropdown-menu {
+    position: static !important;
+    box-shadow: none !important;
+    padding-left: 1.5rem !important;
+    background-color: transparent !important;
+    border: none !important;
+    display: none;
+  }
+  .user-dropdown-menu.show {
+    display: block !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

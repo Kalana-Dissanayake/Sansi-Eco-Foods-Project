@@ -11,7 +11,7 @@ import type { Category } from '../../../shared/types';
 export default function Navbar() {
   const pathname = usePathname();
   const { itemCount } = useCart();
-  const { user } = useAuth();
+  const { user, customer, signOut } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [cartBump, setCartBump] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -19,6 +19,25 @@ export default function Navbar() {
   // Dynamic categories hover list
   const [categories, setCategories] = useState<Category[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+
+  // Close user dropdown when path changes
+  useEffect(() => {
+    setIsUserDropdownOpen(false);
+  }, [pathname]);
+
+  // Click outside to close user dropdown
+  useEffect(() => {
+    if (!isUserDropdownOpen) return;
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.user-dropdown-container')) {
+        setIsUserDropdownOpen(false);
+      }
+    };
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, [isUserDropdownOpen]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -60,12 +79,6 @@ export default function Navbar() {
     { href: '/about', label: 'About Us' },
     { href: '/contact', label: 'Contact Us' },
   ];
-
-  if (user) {
-    secondaryLinks.push({ href: '/dashboard', label: 'Dashboard' });
-  } else {
-    secondaryLinks.push({ href: '/login', label: 'Sign In' });
-  }
 
   return (
     <nav
@@ -215,6 +228,92 @@ export default function Navbar() {
               </Link>
             </li>
           ))}
+
+          {/* User Dropdown or Sign In */}
+          {user ? (
+            <li
+              className="nav-item dropdown user-dropdown-container"
+            >
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsUserDropdownOpen(!isUserDropdownOpen);
+                }}
+                className="nav-link px-3 d-flex align-items-center gap-1 border-0 bg-transparent w-100 text-start"
+                style={{ 
+                  fontWeight: 500,
+                  color: 'var(--dark)',
+                  outline: 'none',
+                  boxShadow: 'none',
+                  cursor: 'pointer'
+                }}
+                aria-expanded={isUserDropdownOpen}
+              >
+                <span className="text-truncate">Hello, {customer?.name ? customer.name.split(' ')[0] : 'Customer'}</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{
+                    transition: 'transform 0.25s ease',
+                    transform: isUserDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    flexShrink: 0,
+                  }}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+              <ul
+                className={`dropdown-menu user-dropdown-menu border-0 shadow-sm ${isUserDropdownOpen ? 'show' : ''}`}
+                style={{
+                  borderRadius: '8px',
+                  padding: '8px 0',
+                }}
+              >
+                <li>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => {
+                      setIsUserDropdownOpen(false);
+                      setIsOpen(false);
+                    }}
+                    className="dropdown-item py-2 px-4"
+                  >
+                    Dashboard
+                  </Link>
+                </li>
+                <li>
+                  <button
+                    onClick={() => {
+                      setIsUserDropdownOpen(false);
+                      setIsOpen(false);
+                      signOut();
+                    }}
+                    className="dropdown-item py-2 px-4 border-0 bg-transparent w-100 text-start text-danger"
+                  >
+                    Sign Out
+                  </button>
+                </li>
+              </ul>
+            </li>
+          ) : (
+            <li className="nav-item">
+              <Link
+                href="/login"
+                onClick={() => setIsOpen(false)}
+                className={`nav-link px-3 ${isActive('/login') ? 'active' : ''}`}
+                style={{ fontWeight: isActive('/login') ? 600 : 500 }}
+              >
+                Sign In
+              </Link>
+            </li>
+          )}
         </ul>
 
         <div className="d-flex align-items-center ms-3 gap-2">
