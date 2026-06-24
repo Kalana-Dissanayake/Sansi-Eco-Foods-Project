@@ -124,17 +124,36 @@ export default function Footer({
             </h6>
             <ul className="list-unstyled" style={{ fontSize: '14px' }}>
               {[
-                { href: '/privacy', label: 'Privacy Policy' },
-                { href: '/terms', label: 'Terms & Conditions' },
-              ].map(({ href, label }) => (
-                <li key={href} className="mb-2">
-                  <Link
-                    href={href}
-                    style={{ color: '#adb5bd', textDecoration: 'none' }}
-                  >
-                    <i className="fas fa-angle-right me-1" style={{ color: 'var(--secondary)', fontSize: '12px' }}></i>
-                    {label}
-                  </Link>
+                { href: '/privacy', label: 'Privacy Policy', isExternal: false },
+                { href: '/terms', label: 'Terms & Conditions', isExternal: false },
+                {
+                  href: process.env.NEXT_PUBLIC_ADMIN_URL || 'https://sansi-eco-foods-admin.vercel.app',
+                  label: 'Admin Panel',
+                  isExternal: true
+                },
+              ].map(({ href, label, isExternal }) => (
+                <li key={label} className="mb-2">
+                  {isExternal ? (
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: '#adb5bd', textDecoration: 'none' }}
+                      className="footer-link"
+                    >
+                      <i className="fas fa-angle-right me-1" style={{ color: 'var(--secondary)', fontSize: '12px' }}></i>
+                      {label}
+                    </a>
+                  ) : (
+                    <Link
+                      href={href}
+                      style={{ color: '#adb5bd', textDecoration: 'none' }}
+                      className="footer-link"
+                    >
+                      <i className="fas fa-angle-right me-1" style={{ color: 'var(--secondary)', fontSize: '12px' }}></i>
+                      {label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
