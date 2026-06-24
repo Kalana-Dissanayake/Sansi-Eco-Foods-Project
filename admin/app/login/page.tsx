@@ -34,7 +34,10 @@ export default function LoginPage() {
     const result = await sendPasswordReset(resetEmail.trim());
     setResetLoading(false);
     if (result.success) {
-      toast.success('Password reset email sent! Check your inbox.');
+      toast.success(
+        'Password reset link requested! Please check your inbox and Spam/Junk folder.',
+        { duration: 6000 }
+      );
       setShowReset(false);
     } else {
       toast.error(result.error ?? 'Failed to send reset email');
@@ -129,7 +132,7 @@ export default function LoginPage() {
           ) : (
             <>
               <h2 className="text-xl font-bold text-gray-800 mb-2">Reset Password</h2>
-              <p className="text-gray-500 text-sm mb-6">
+              <p className="text-gray-500 text-sm mb-4">
                 Enter your email and we&apos;ll send you a reset link.
               </p>
               <form onSubmit={handleReset} className="space-y-4">
@@ -150,15 +153,25 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={resetLoading}
-                  className="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-60"
+                  className="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-60 text-sm"
                 >
                   {resetLoading ? 'Sending...' : 'Send Reset Email'}
                 </button>
               </form>
+              
+              <div className="mt-5 p-3.5 bg-amber-50 rounded-xl text-xs text-amber-800 border border-amber-100 space-y-1 text-left">
+                <p className="font-semibold text-amber-900">Trouble receiving the link?</p>
+                <ul className="list-disc list-inside space-y-1 text-amber-800/90">
+                  <li>Check your <strong>Spam or Junk folder</strong>.</li>
+                  <li>Verify that the email is spelled exactly correct.</li>
+                  <li>Ensure the email is registered in the <strong>Firebase Auth Console</strong>. (Firebase protects against email enumeration and will report success even if the email does not exist).</li>
+                </ul>
+              </div>
+
               <div className="text-center mt-4">
                 <button
                   onClick={() => setShowReset(false)}
-                  className="text-sm text-green-700 hover:underline"
+                  className="text-sm text-green-700 hover:underline font-medium"
                 >
                   ← Back to Sign In
                 </button>

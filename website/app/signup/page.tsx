@@ -219,7 +219,6 @@ function SignupForm() {
     return (
       <div className="p-4 bg-white rounded-3 shadow-sm animate__animated animate__fadeIn" style={{ border: '1px solid var(--gray-200)' }}>
         <h5 className="mb-3 text-dark text-center" style={{ fontWeight: 700 }}>Verify Your Email</h5>
-        <p className="text-center text-danger small" id="dev-otp-code">DEV OTP: {generatedOtp}</p>
         <p className="text-muted text-center mb-4" style={{ fontSize: '14px', lineHeight: '1.5' }}>
           We have sent a 6-digit passcode to <strong style={{ color: 'var(--primary)' }}>{email}</strong>.
           Please enter the code below to complete registration.

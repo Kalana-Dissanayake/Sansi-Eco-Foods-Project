@@ -35,8 +35,17 @@ export async function sendPasswordReset(email: string): Promise<{ success: boole
   try {
     await firebaseSendPasswordResetEmail(auth, email);
     return { success: true };
-  } catch {
-    return { success: false, error: 'Failed to send reset email. Please check the email address.' };
+  } catch (error: any) {
+    console.error('Password reset failed:', error);
+    let message = 'Failed to send reset email.';
+    if (error.code === 'auth/user-not-found') {
+      message = 'No account found with this email address.';
+    } else if (error.code === 'auth/invalid-email') {
+      message = 'Invalid email address format.';
+    } else if (error.message) {
+      message = error.message;
+    }
+    return { success: false, error: message };
   }
 }
 
