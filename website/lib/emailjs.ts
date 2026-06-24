@@ -42,21 +42,17 @@ export async function sendOrderConfirmation(data: OrderConfirmationData): Promis
 }
 
 export async function sendOTP(email: string, passcode: string): Promise<void> {
-  const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
-  const templateId = process.env.NEXT_PUBLIC_EMAILJS_OTP_TEMPLATE_ID || process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
-  const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
+  // Use a server-side API route to avoid CORS/domain-allowlist restrictions on Vercel.
+  // The browser @emailjs/browser SDK is blocked by EmailJS when the domain isn't on 
+  // the allowlist - calling our own API route bypasses that entirely.
+  const response = await fetch('/api/send-otp', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email.trim(), passcode }),
+  });
 
-  if (!serviceId || !templateId || !publicKey) {
-    console.warn('EmailJS not configured. Skipping OTP email send. Passcode is:', passcode);
-    return;
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || 'Failed to send OTP email');
   }
-
-  const templateParams = {
-    email: email.trim(),
-    passcode: passcode,
-    time: '15 minutes',
-    logo_url: 'https://res.cloudinary.com/df1601dip/image/upload/q_auto/f_auto/v1781681836/bqeawlmwhhd8eimjwsqn.png',
-  };
-
-  await emailjs.send(serviceId, templateId, templateParams, publicKey);
 }
