@@ -7,6 +7,7 @@ import { CartProvider } from '../context/CartContext';
 import AnnouncementBar from '../components/layout/AnnouncementBar';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
+import PageTransition from '../components/layout/PageTransition';
 import { getSettings } from '../lib/firestore';
 import './globals.css';
 
@@ -131,7 +132,7 @@ export default async function RootLayout({
               text={settings.announcementBarText}
             />
             <Navbar />
-            <main className="page-fade-in">{children}</main>
+            <PageTransition>{children}</PageTransition>
             <Footer
               phone={settings.whatsappNumber}
               email={settings.contactEmail}

@@ -1,5 +1,17 @@
 import Link from 'next/link';
 
+function formatPhoneNumber(raw: string): string {
+  // Remove any non-digit characters
+  const digits = raw.replace(/\D/g, '');
+  // Match Sri Lankan format: 94XXXXXXXXX (11 digits starting with 94)
+  const match = digits.match(/^94(\d{2})(\d{3})(\d{4})$/);
+  if (match) {
+    return `+94 ${match[1]} ${match[2]} ${match[3]}`;
+  }
+  // Fallback: return as-is
+  return raw;
+}
+
 interface FooterProps {
   phone: string;
   email: string;
@@ -173,7 +185,7 @@ export default function Footer({
                 <li className="mb-2 d-flex align-items-center gap-2">
                   <i className="fas fa-phone-alt" style={{ color: 'var(--secondary)', minWidth: '16px' }}></i>
                   <a href={`tel:${phone}`} style={{ color: '#adb5bd', textDecoration: 'none' }}>
-                    {phone}
+                    {formatPhoneNumber(phone)}
                   </a>
                 </li>
               )}

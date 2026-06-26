@@ -77,6 +77,38 @@ h1, h2, h3, h4, h5, h6 {
 a { transition: var(--transition); }
 img { max-width: 100%; }
 
+/* ─── Page Transitions ─────────────────────────────────────────── */
+.page-fade-in {
+  animation: pageFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.page-fade-out {
+  animation: pageFadeOut 0.22s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pageFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+
 /* ─── Utility ─────────────────────────────────────────────────── */
 .section-padding { padding: 80px 0; }
 .section-padding-sm { padding: 50px 0; }

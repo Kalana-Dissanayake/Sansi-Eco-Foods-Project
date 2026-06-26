@@ -8,6 +8,7 @@ import AdminSidebar from '../../components/layout/AdminSidebar';
 import AdminTopbar from '../../components/layout/AdminTopbar';
 import { Toaster } from 'react-hot-toast';
 import type { RolePermissions } from '../../../shared/types';
+import PageTransition from './PageTransition';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -61,7 +62,7 @@ export default function AdminLayout({
           pendingOrders={pendingOrders}
           userName={adminUser?.displayName ?? adminUser?.email}
         />
-        <main className="p-6 page-fade-in">
+        <PageTransition className="p-6">
           {hasAccess ? (
             children
           ) : (
@@ -83,7 +84,7 @@ export default function AdminLayout({
               </div>
             </div>
           )}
-        </main>
+        </PageTransition>
       </div>
       <Toaster
         position="top-right"

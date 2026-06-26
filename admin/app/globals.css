@@ -44,7 +44,11 @@ input:focus, select:focus, textarea:focus {
 
 /* Smooth Page Transitions */
 .page-fade-in {
-  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.page-fade-out {
+  animation: fadeOut 0.22s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 @keyframes fadeIn {
@@ -57,3 +61,15 @@ input:focus, select:focus, textarea:focus {
     transform: translateY(0);
   }
 }
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
