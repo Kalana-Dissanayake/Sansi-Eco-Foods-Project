@@ -42,7 +42,7 @@ export const metadata: Metadata = {
 const DEFAULT_SETTINGS = {
   announcementBarEnabled: true,
   announcementBarText: '🌿 Free delivery on orders over Rs. 2,500 island-wide!',
-  whatsappNumber: '94771234567',
+  whatsappNumber: '+94 77 123 4567',
   contactEmail: 'info@sansiecofoods.com',
   businessAddress: 'Anamaduwa, North Western Province, Sri Lanka',
   facebookUrl: 'https://web.facebook.com/sansiecofoods',

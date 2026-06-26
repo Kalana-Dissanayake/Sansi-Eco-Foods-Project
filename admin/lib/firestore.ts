@@ -426,7 +426,7 @@ export async function seedInitialData(): Promise<void> {
     featuredProductIds: [],
     shippingRates: { colombo: 250, westernProvince: 300, outstation: 400 },
     minOrderForFreeShipping: 2500,
-    whatsappNumber: '94771234567',
+    whatsappNumber: '+94 77 123 4567',
     contactEmail: 'info@sansiecofoods.com',
     businessAddress: 'Anamaduwa, North Western Province, Sri Lanka',
     facebookUrl: 'https://web.facebook.com/sansiecofoods',

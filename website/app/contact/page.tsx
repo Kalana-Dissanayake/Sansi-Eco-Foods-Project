@@ -12,7 +12,7 @@ const CONTACT_INFO = {
   phone: '+94 77 123 4567',
   email: 'info@sansiecofoods.com',
   address: 'Anamaduwa, North Western Province, Sri Lanka',
-  whatsapp: '94771234567',
+  whatsapp: '+94 77 123 4567',
   facebook: 'https://web.facebook.com/sansiecofoods',
   instagram: 'https://www.instagram.com/sansiecofoods',
   tiktok: 'https://www.tiktok.com/@sansiecofood',

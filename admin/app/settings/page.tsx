@@ -206,7 +206,7 @@ export default function SettingsPage() {
               <h3 className="font-bold text-gray-800">Contact & Social Media</h3>
               <div className="space-y-4">
                 <Input
-                  label="WhatsApp Number (without +, e.g. 94771234567)"
+                  label="WhatsApp Number (without +, e.g. +94 77 123 4567)"
                   value={settings.whatsappNumber}
                   onChange={(e) => update('whatsappNumber', e.target.value)}
                 />
