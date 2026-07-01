@@ -67,37 +67,30 @@ export async function createNotification(data: {
 export async function getDashboardStats() {
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const [ordersToday, ordersMonth, pendingOrders, allOrders] = await Promise.all([
+  const [ordersToday, allOrders, pendingOrders] = await Promise.all([
     getDocs(query(
       collection(db, 'orders'),
       where('createdAt', '>=', Timestamp.fromDate(todayStart))
     )),
-    getDocs(query(
-      collection(db, 'orders'),
-      where('createdAt', '>=', Timestamp.fromDate(monthStart))
-    )),
+    getDocs(collection(db, 'orders')),
     getDocs(query(
       collection(db, 'orders'),
       where('orderStatus', '==', 'Pending')
     )),
-    getDocs(query(
-      collection(db, 'orders'),
-      where('orderStatus', '==', 'Delivered'),
-      where('createdAt', '>=', Timestamp.fromDate(monthStart))
-    )),
   ]);
 
-  const revenueThisMonth = allOrders.docs.reduce(
-    (sum, d) => sum + ((d.data() as Order).totalLKR ?? 0),
-    0
-  );
+  // Count revenue from all non-cancelled orders ever
+  const totalRevenue = allOrders.docs.reduce((sum, d) => {
+    const order = d.data() as Order;
+    if (order.orderStatus === 'Cancelled') return sum;
+    return sum + (order.totalLKR ?? 0);
+  }, 0);
 
   return {
     ordersToday: ordersToday.size,
-    ordersThisMonth: ordersMonth.size,
-    revenueThisMonth,
+    ordersThisMonth: allOrders.size,
+    revenueThisMonth: totalRevenue,
     pendingOrders: pendingOrders.size,
   };
 }

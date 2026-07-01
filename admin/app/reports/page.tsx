@@ -7,20 +7,21 @@ import { db } from '../../lib/firebase';
 import AdminLayout from '../../components/layout/AdminLayout';
 import type { Order } from '../../../shared/types';
 
-// Dynamic imports for Recharts to prevent SSR errors in Next.js App Router
-const ResponsiveContainer = dynamic(() => import('recharts').then((m) => m.ResponsiveContainer), { ssr: false });
-const AreaChart = dynamic(() => import('recharts').then((m) => m.AreaChart), { ssr: false });
-const Area = dynamic(() => import('recharts').then((m) => m.Area), { ssr: false });
-const XAxis = dynamic(() => import('recharts').then((m) => m.XAxis), { ssr: false });
-const YAxis = dynamic(() => import('recharts').then((m) => m.YAxis), { ssr: false });
-const CartesianGrid = dynamic(() => import('recharts').then((m) => m.CartesianGrid), { ssr: false });
-const Tooltip = dynamic(() => import('recharts').then((m) => m.Tooltip), { ssr: false });
-const BarChart = dynamic(() => import('recharts').then((m) => m.BarChart), { ssr: false });
-const Bar = dynamic(() => import('recharts').then((m) => m.Bar), { ssr: false });
-const PieChart = dynamic(() => import('recharts').then((m) => m.PieChart), { ssr: false });
-const Pie = dynamic(() => import('recharts').then((m) => m.Pie), { ssr: false });
-const Cell = dynamic(() => import('recharts').then((m) => m.Cell), { ssr: false });
-const Legend = dynamic(() => import('recharts').then((m) => m.Legend), { ssr: false });
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from 'recharts';
 
 const STATUS_COLORS: Record<string, string> = {
   Pending: '#f59e0b',     // Amber
@@ -60,6 +61,12 @@ export default function ReportsPage() {
   const [salesTrends, setSalesTrends] = useState<SalesDataPoint[]>([]);
   const [productData, setProductData] = useState<ProductPerformance[]>([]);
   const [statusData, setStatusData] = useState<StatusDistribution[]>([]);
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -141,6 +148,16 @@ export default function ReportsPage() {
     fetchAnalytics();
   }, []);
 
+  if (!mounted) {
+    return (
+      <AdminLayout title="Reports & Charts" description="Analyse order trends, revenue performance, and best-selling products." requiredPermission="reports_view">
+        <div className="flex items-center justify-center py-24">
+          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout title="Reports & Charts" description="Analyse order trends, revenue performance, and best-selling products." requiredPermission="reports_view">
       {loading ? (
@@ -197,31 +214,85 @@ export default function ReportsPage() {
             </div>
 
             {/* Order Status Distribution Pie Chart */}
-            <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm space-y-4 flex flex-col justify-between">
+            <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm space-y-3 flex flex-col">
               <div>
-                <h3 className="font-bold text-slate-800 text-sm">Order Status Map</h3>
-                <span className="text-[10px] text-slate-400 block mt-0.5">Proportion of orders by status types</span>
+                <h3 className="font-bold text-slate-800 text-sm">Order Status Distribution</h3>
+                <span className="text-[10px] text-slate-400 block mt-0.5">Breakdown of all orders by current status</span>
               </div>
-              <div className="h-56 w-full flex items-center justify-center">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={statusData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={3} dataKey="value">
-                      {statusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.name] || DEFAULT_COLOR} />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px' }} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center pt-2">
-                {statusData.map((item) => (
-                  <div key={item.name} className="flex items-center gap-1.5 text-[10px] font-bold text-slate-600">
-                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: STATUS_COLORS[item.name] || DEFAULT_COLOR }} />
-                    <span>{item.name} ({item.value})</span>
+
+              {statusData.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center text-slate-400 text-xs py-10">No order data yet</div>
+              ) : (
+                <>
+                  <div className="h-52 w-full relative">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={statusData}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          innerRadius={42}
+                          paddingAngle={2}
+                          dataKey="value"
+                          labelLine={false}
+                          label={(props) => {
+                            const { cx = 0, cy = 0, midAngle = 0, innerRadius = 0, outerRadius = 0, percent = 0 } = props;
+                            if (percent < 0.06) return null;
+                            const RADIAN = Math.PI / 180;
+                            const radius = (innerRadius as number) + ((outerRadius as number) - (innerRadius as number)) * 0.55;
+                            const x = (cx as number) + radius * Math.cos(-(midAngle as number) * RADIAN);
+                            const y = (cy as number) + radius * Math.sin(-(midAngle as number) * RADIAN);
+                            return (
+                              <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight={800}>
+                                {`${((percent as number) * 100).toFixed(0)}%`}
+                              </text>
+                            );
+                          }}
+                        >
+                          {statusData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.name] || DEFAULT_COLOR} stroke="white" strokeWidth={2} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{ fontSize: '11px', borderRadius: '8px', border: '1px solid #f1f5f9', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+                          formatter={(value: any, name: any) => [`${value} orders`, name]}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    {/* Centre total */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                      <span className="text-xl font-black text-slate-800 leading-none">
+                        {statusData.reduce((s, d) => s + d.value, 0)}
+                      </span>
+                      <span className="text-[9px] font-bold text-slate-400 tracking-wider uppercase mt-0.5">Total</span>
+                    </div>
                   </div>
-                ))}
-              </div>
+
+                  {/* Rich legend */}
+                  <div className="space-y-1.5 pt-1">
+                    {statusData
+                      .sort((a, b) => b.value - a.value)
+                      .map((item) => {
+                        const total = statusData.reduce((s, d) => s + d.value, 0);
+                        const pct = total > 0 ? ((item.value / total) * 100).toFixed(1) : '0';
+                        const color = STATUS_COLORS[item.name] || DEFAULT_COLOR;
+                        return (
+                          <div key={item.name} className="flex items-center justify-between text-[10px]">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: color }} />
+                              <span className="font-semibold text-slate-600">{item.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-black text-slate-800">{item.value}</span>
+                              <span className="text-slate-400 w-9 text-right">{pct}%</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Product Performance Bar Chart */}
