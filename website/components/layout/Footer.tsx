@@ -138,11 +138,6 @@ export default function Footer({
               {[
                 { href: '/privacy', label: 'Privacy Policy', isExternal: false },
                 { href: '/terms', label: 'Terms & Conditions', isExternal: false },
-                {
-                  href: process.env.NEXT_PUBLIC_ADMIN_URL || 'https://sansi-eco-foods-admin.vercel.app',
-                  label: 'Admin Panel',
-                  isExternal: true
-                },
               ].map(({ href, label, isExternal }) => (
                 <li key={label} className="mb-2">
                   {isExternal ? (
