@@ -32,7 +32,35 @@ import type {
   StatusHistoryEntry,
   Role,
   RolePermissions,
+  NotificationType,
 } from '../../shared/types';
+
+// ─── Notifications ───────────────────────────────────────────────────────────
+
+export async function createNotification(data: {
+  type: NotificationType;
+  title: string;
+  body: string;
+  orderId?: string;
+  orderNumber?: string;
+  productId?: string;
+  productName?: string;
+  customerId?: string;
+  customerName?: string;
+  messageId?: string;
+  linkTo?: string;
+}): Promise<void> {
+  try {
+    await addDoc(collection(db, 'notifications'), {
+      ...data,
+      read: false,
+      createdAt: serverTimestamp(),
+    });
+  } catch (err) {
+    // Non-critical — don't break the primary operation
+    console.error('Failed to create notification:', err);
+  }
+}
 
 // ─── Dashboard ─────────────────────────────────────────────────────────────────
 
@@ -165,7 +193,38 @@ export async function updateOrderStatus(
         });
       }
       await batch.commit();
+
+      // Fire order_cancelled notification (non-blocking)
+      createNotification({
+        type: 'order_cancelled',
+        title: 'Order Cancelled',
+        body: `Order ${order.orderNumber} for ${order.customer.name} has been cancelled by admin.`,
+        orderId: orderId,
+        orderNumber: order.orderNumber,
+        customerName: order.customer.name,
+        linkTo: `/orders/${orderId}`,
+      });
     }
+  }
+}
+
+// ─── Stock Alert Notification ─────────────────────────────────────────────────
+
+export async function checkAndCreateStockAlertNotification(
+  productId: string,
+  productName: string,
+  newQty: number,
+  threshold: number
+): Promise<void> {
+  if (newQty <= threshold) {
+    await createNotification({
+      type: 'stock_alert',
+      title: 'Low Stock Alert',
+      body: `"${productName}" is running low. Only ${newQty} unit${newQty === 1 ? '' : 's'} remaining (threshold: ${threshold}).`,
+      productId,
+      productName,
+      linkTo: `/products/${productId}`,
+    });
   }
 }
 
@@ -215,11 +274,24 @@ export async function deleteProduct(id: string): Promise<void> {
 }
 
 export async function updateProductStock(id: string, stockQuantity: number): Promise<void> {
+  // Read product first so we have name and threshold for the stock alert check
+  const productSnap = await getDoc(doc(db, 'products', id));
   await updateDoc(doc(db, 'products', id), {
     stockQuantity,
     inStock: stockQuantity > 0,
     updatedAt: serverTimestamp(),
   });
+
+  // Fire stock alert if the new quantity is at or below the threshold
+  if (productSnap.exists()) {
+    const product = productSnap.data() as Product;
+    await checkAndCreateStockAlertNotification(
+      id,
+      product.name,
+      stockQuantity,
+      product.lowStockThreshold
+    );
+  }
 }
 
 // ─── Categories ───────────────────────────────────────────────────────────────

@@ -14,6 +14,7 @@ import {
   increment,
   setDoc,
   updateDoc,
+  addDoc,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type {
@@ -27,7 +28,35 @@ import type {
   CustomerFormData,
   ContactMessage,
   DeliveryAddress,
+  NotificationType,
 } from '../../shared/types';
+
+// ─── Notification Helper (fire-and-forget) ──────────────────────────────────
+
+async function createNotification(data: {
+  type: NotificationType;
+  title: string;
+  body: string;
+  orderId?: string;
+  orderNumber?: string;
+  productId?: string;
+  productName?: string;
+  customerId?: string;
+  customerName?: string;
+  messageId?: string;
+  linkTo?: string;
+}): Promise<void> {
+  try {
+    await addDoc(collection(db, 'notifications'), {
+      ...data,
+      read: false,
+      createdAt: serverTimestamp(),
+    });
+  } catch (err) {
+    // Non-critical — don't block primary operations
+    console.error('Failed to write notification:', err);
+  }
+}
 
 // ─── Settings ────────────────────────────────────────────────────────────────
 
@@ -215,6 +244,17 @@ export async function submitContactMessage(data: {
       read: false,
       createdAt: serverTimestamp(),
     });
+
+    // Fire message notification (non-blocking)
+    createNotification({
+      type: 'message',
+      title: 'New Customer Message',
+      body: `${data.name} sent a message: "${data.subject || data.message.slice(0, 60)}"`,
+      messageId: msgRef.id,
+      customerName: data.name,
+      linkTo: '/notifications',
+    });
+
     return { success: true };
   } catch (error) {
     console.error('Error submitting contact message:', error);
@@ -261,6 +301,9 @@ export async function createOrder(
     const discountLKR = coupon?.discount ?? 0;
     const totalLKR = Math.max(0, subtotalLKR + shippingLKR - discountLKR);
 
+    // Collect stock info to check thresholds AFTER the transaction
+    const stockInfo: { id: string; name: string; newQty: number; threshold: number }[] = [];
+
     const orderId = await runTransaction(db, async (transaction) => {
       // 1. Read all required data first (all reads must precede all writes)
       const productRefs = cartItems.map((item) => doc(db, 'products', item.productId));
@@ -288,12 +331,19 @@ export async function createOrder(
 
       // 3. Decrement stock for each item (Write)
       for (let i = 0; i < cartItems.length; i++) {
-        const newQty =
-          (productSnaps[i].data() as Product).stockQuantity - cartItems[i].quantity;
+        const product = productSnaps[i].data() as Product;
+        const newQty = product.stockQuantity - cartItems[i].quantity;
         transaction.update(productRefs[i], {
           stockQuantity: newQty,
           inStock: newQty > 0,
           updatedAt: serverTimestamp(),
+        });
+        // Capture for post-transaction stock alert check
+        stockInfo.push({
+          id: cartItems[i].productId,
+          name: product.name,
+          newQty,
+          threshold: product.lowStockThreshold,
         });
       }
 
@@ -368,6 +418,20 @@ export async function createOrder(
       return orderRef.id;
     });
 
+    // Check for stock alerts on each purchased product (non-blocking, after transaction)
+    for (const item of stockInfo) {
+      if (item.newQty <= item.threshold) {
+        createNotification({
+          type: 'stock_alert',
+          title: 'Low Stock Alert',
+          body: `"${item.name}" is running low after an order. Only ${item.newQty} unit${item.newQty === 1 ? '' : 's'} remaining (threshold: ${item.threshold}).`,
+          productId: item.id,
+          productName: item.name,
+          linkTo: `/products`,
+        });
+      }
+    }
+
     // Update coupon usage count outside transaction
     if (coupon?.code) {
       try {
@@ -384,6 +448,20 @@ export async function createOrder(
         // Non-critical, don't fail the order
       }
     }
+
+    // Fire order_placed notification (non-blocking)
+    const notifSubtotal = cartItems.reduce((sum, item) => sum + item.priceLKR * item.quantity, 0);
+    const notifDiscount = coupon?.discount ?? 0;
+    const notifTotal = Math.max(0, notifSubtotal + shippingLKR - notifDiscount);
+    createNotification({
+      type: 'order_placed',
+      title: 'New Order Placed',
+      body: `${customerData.name} placed order ${orderNumber} for Rs. ${notifTotal.toLocaleString()}.`,
+      orderId,
+      orderNumber,
+      customerName: customerData.name,
+      linkTo: `/orders/${orderId}`,
+    });
 
     return { success: true, orderId, orderNumber };
   } catch (error) {
@@ -530,6 +608,15 @@ export async function cancelOrder(
           });
         }
       }
+    });
+
+    // Fire order_cancelled notification (non-blocking)
+    createNotification({
+      type: 'order_cancelled',
+      title: 'Order Cancelled by Customer',
+      body: `A customer cancelled their order. Reason: ${cancellationReason || 'No reason provided'}.`,
+      orderId,
+      linkTo: `/orders/${orderId}`,
     });
 
     return { success: true };

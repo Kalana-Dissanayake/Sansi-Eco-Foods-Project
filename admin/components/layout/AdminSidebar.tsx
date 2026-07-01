@@ -20,7 +20,7 @@ interface NavItem {
   label: string;
   icon: string;
   permission: keyof RolePermissions;
-  badgeType?: 'orders' | 'messages';
+  badgeType?: 'orders' | 'notifications';
 }
 
 interface NavSection {
@@ -49,7 +49,7 @@ const SECTIONS: NavSection[] = [
     title: 'ANALYTICS',
     items: [
       { href: '/reports', label: 'Reports', icon: '📈', permission: 'reports_view' },
-      { href: '/messages', label: 'Messages', icon: '✉️', permission: 'messages_view', badgeType: 'messages' },
+      { href: '/notifications', label: 'Notifications', icon: '🔔', permission: 'messages_view', badgeType: 'notifications' },
     ],
   },
   {
@@ -69,13 +69,13 @@ export default function AdminSidebar({ pendingOrders = 0, userName }: AdminSideb
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   useEffect(() => {
-    // Only subscribe to messages if user has permissions
+    // Only subscribe if user has permissions
     if (!hasPermission('messages_view')) return;
-    const q = query(collection(db, 'contact_messages'), where('read', '==', false));
+    const q = query(collection(db, 'notifications'), where('read', '==', false));
     const unsubscribe = onSnapshot(
       q,
       (snap) => setUnreadMessages(snap.size),
-      (err) => console.log('Messages count listener suppressed:', err.message)
+      (err) => console.log('Notifications count listener suppressed:', err.message)
     );
     return unsubscribe;
   }, [hasPermission]);
@@ -86,9 +86,9 @@ export default function AdminSidebar({ pendingOrders = 0, userName }: AdminSideb
     router.push('/login');
   };
 
-  const getBadgeValue = (type?: 'orders' | 'messages') => {
+  const getBadgeValue = (type?: 'orders' | 'notifications') => {
     if (type === 'orders') return pendingOrders;
-    if (type === 'messages') return unreadMessages;
+    if (type === 'notifications') return unreadMessages;
     return 0;
   };
 
@@ -165,7 +165,7 @@ export default function AdminSidebar({ pendingOrders = 0, userName }: AdminSideb
                         <span className="flex-1">{item.label}</span>
                         {badge > 0 && (
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
-                            item.badgeType === 'messages'
+                            item.badgeType === 'notifications'
                               ? 'bg-amber-500 text-slate-900'
                               : 'bg-amber-400 text-yellow-900'
                           }`}>
@@ -319,7 +319,7 @@ export default function AdminSidebar({ pendingOrders = 0, userName }: AdminSideb
                         <span className="flex-1">{item.label}</span>
                         {badge > 0 && (
                           <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold ${
-                            item.badgeType === 'messages'
+                            item.badgeType === 'notifications'
                               ? 'bg-amber-500 text-slate-900'
                               : 'bg-amber-400 text-yellow-900'
                           }`}>

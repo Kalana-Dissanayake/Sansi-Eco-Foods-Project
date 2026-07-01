@@ -267,6 +267,33 @@ export interface ContactMessage {
   createdAt: Timestamp;
 }
 
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+export type NotificationType =
+  | 'order_placed'
+  | 'message'
+  | 'stock_alert'
+  | 'order_cancelled'
+  | 'new_customer';
+
+export interface Notification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  read: boolean;
+  createdAt: Timestamp;
+  // Optional reference payloads
+  orderId?: string;
+  orderNumber?: string;
+  productId?: string;
+  productName?: string;
+  customerId?: string;
+  customerName?: string;
+  messageId?: string;
+  linkTo?: string; // e.g. '/orders/abc123'
+}
+
 // ─── Counters ─────────────────────────────────────────────────────────────────
 
 export interface OrderCounter {

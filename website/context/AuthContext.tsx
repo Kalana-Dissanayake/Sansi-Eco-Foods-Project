@@ -10,6 +10,8 @@ import {
 } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { getCustomerProfile, createCustomerProfile, updateCustomerProfile } from '../lib/firestore';
+import { db } from '../lib/firebase';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import type { Customer, DeliveryAddress } from '../../shared/types';
 import toast from 'react-hot-toast';
 
@@ -111,7 +113,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         address,
       });
 
-      // 3. Update local state
+      // 3. Fire new_customer notification (non-blocking)
+      addDoc(collection(db, 'notifications'), {
+        type: 'new_customer',
+        title: 'New Customer Registered',
+        body: `${name} created a new account (${email}).`,
+        customerId: credential.user.uid,
+        customerName: name,
+        linkTo: `/customers`,
+        read: false,
+        createdAt: serverTimestamp(),
+      }).catch((err) => console.error('Failed to create new_customer notification:', err));
+
+      // 4. Update local state
       const profile = await getCustomerProfile(credential.user.uid);
       setCustomer(profile);
 
