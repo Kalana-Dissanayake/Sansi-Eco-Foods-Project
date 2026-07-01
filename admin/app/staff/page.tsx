@@ -77,9 +77,9 @@ const PERMISSION_GROUPS = [
     ],
   },
   {
-    title: 'Messages',
+    title: 'Notifications',
     permissions: [
-      { key: 'messages_view', label: 'View Contact Messages', desc: 'Allows access to read and manage contact form submissions.' },
+      { key: 'messages_view', label: 'Manage Store Notifications', desc: 'Allows access to read and manage store notifications, alerts, and customer messages.' },
     ],
   },
   {
