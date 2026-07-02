@@ -33,6 +33,8 @@ import type {
   Role,
   RolePermissions,
   NotificationType,
+  Review,
+  ReviewStatus,
 } from '../../shared/types';
 
 // ─── Notifications ───────────────────────────────────────────────────────────
@@ -547,3 +549,33 @@ export async function markOrderDelivered(
     statusHistory: arrayUnion(historyEntry),
   });
 }
+
+// ─── Reviews ─────────────────────────────────────────────────────────────────
+
+export async function getReviews(status?: ReviewStatus): Promise<Review[]> {
+  const q = status
+    ? query(
+        collection(db, 'reviews'),
+        where('status', '==', status),
+        orderBy('createdAt', 'desc'),
+        limit(200)
+      )
+    : query(collection(db, 'reviews'), orderBy('createdAt', 'desc'), limit(200));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Review));
+}
+
+export async function updateReviewStatus(
+  reviewId: string,
+  status: ReviewStatus
+): Promise<void> {
+  await updateDoc(doc(db, 'reviews', reviewId), {
+    status,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteReview(reviewId: string): Promise<void> {
+  await deleteDoc(doc(db, 'reviews', reviewId));
+}
+

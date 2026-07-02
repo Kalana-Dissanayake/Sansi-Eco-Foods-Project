@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import type { Review } from '../../../shared/types';
 
-const TESTIMONIALS = [
+// ── Fallback static testimonials ─────────────────────────────────────────────
+const STATIC_TESTIMONIALS = [
   {
     text: "Absolutely love the Mango Jujubes! So natural and delicious — my kids can't stop eating them. I'm so glad I found a brand that doesn't use any chemicals.",
     author: 'Nimesha P.',
@@ -29,8 +31,30 @@ const TESTIMONIALS = [
   },
 ];
 
-export default function TestimonialsSection() {
+interface TestimonialData {
+  text: string;
+  author: string;
+  location: string;
+  rating: number;
+}
+
+interface TestimonialsSectionProps {
+  reviews?: Review[];
+}
+
+export default function TestimonialsSection({ reviews }: TestimonialsSectionProps) {
   const carouselRef = useRef<HTMLDivElement>(null);
+
+  // Convert approved reviews to TestimonialData, fall back to static data
+  const testimonials: TestimonialData[] =
+    reviews && reviews.length > 0
+      ? reviews.map((r) => ({
+          text: r.text,
+          author: r.reviewerName,
+          location: r.location || 'Sri Lanka',
+          rating: r.rating,
+        }))
+      : STATIC_TESTIMONIALS;
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
@@ -84,7 +108,7 @@ export default function TestimonialsSection() {
         }
       }
     };
-  }, []);
+  }, [testimonials.length]);
 
   return (
     <section className="section-padding" style={{ background: 'var(--light)' }}>
@@ -96,7 +120,7 @@ export default function TestimonialsSection() {
 
         {/* Fallback grid for SSR / no-JS */}
         <div className="row g-4 d-none d-md-flex">
-          {TESTIMONIALS.slice(0, 3).map((t, i) => (
+          {testimonials.slice(0, 3).map((t, i) => (
             <div key={i} className="col-md-4">
               <TestimonialCard {...t} />
             </div>
@@ -105,7 +129,7 @@ export default function TestimonialsSection() {
 
         {/* Owl Carousel for mobile */}
         <div ref={carouselRef} className="owl-carousel d-md-none">
-          {TESTIMONIALS.map((t, i) => (
+          {testimonials.map((t, i) => (
             <div key={i}>
               <TestimonialCard {...t} />
             </div>
@@ -121,17 +145,16 @@ function TestimonialCard({
   author,
   location,
   rating,
-}: {
-  text: string;
-  author: string;
-  location: string;
-  rating: number;
-}) {
+}: TestimonialData) {
   return (
     <div className="testimonial-item wow animate__fadeInUp" data-wow-delay="0.1s">
       <div className="stars">
-        {Array.from({ length: rating }).map((_, i) => (
-          <i key={i} className="fas fa-star"></i>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <i
+            key={i}
+            className="fas fa-star"
+            style={{ color: i < rating ? 'var(--secondary)' : '#ddd' }}
+          />
         ))}
       </div>
       <p>&ldquo;{text}&rdquo;</p>
@@ -160,3 +183,4 @@ function TestimonialCard({
     </div>
   );
 }
+

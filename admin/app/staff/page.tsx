@@ -88,6 +88,12 @@ const PERMISSION_GROUPS = [
       { key: 'export_view', label: 'Export Data', desc: 'Allows exporting database collections (orders, products, etc.) as Excel/CSV.' },
     ],
   },
+  {
+    title: 'Reviews',
+    permissions: [
+      { key: 'reviews_manage', label: 'Manage Reviews', desc: 'Allows viewing, approving, rejecting, and deleting customer product reviews.' },
+    ],
+  },
 ];
 
 const DEFAULT_PERMISSIONS: RolePermissions = {
@@ -108,6 +114,7 @@ const DEFAULT_PERMISSIONS: RolePermissions = {
   reports_view: false,
   messages_view: false,
   export_view: false,
+  reviews_manage: false,
 };
 
 export default function StaffPage() {

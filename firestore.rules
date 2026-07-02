@@ -47,6 +47,18 @@ service cloud.firestore {
       allow read, update, delete: if hasPermission('messages_view') || isSuperAdmin();
     }
 
+    // Reviews: authenticated customers can create/read their own,
+    // approved reviews are publicly readable,
+    // admin with reviews_manage can read/update/delete all
+    match /reviews/{id} {
+      allow create: if request.auth != null;
+      allow read: if resource.data.status == 'approved'
+                  || (request.auth != null && resource.data.customerId == request.auth.uid)
+                  || hasPermission('reviews_manage')
+                  || isSuperAdmin();
+      allow update, delete: if hasPermission('reviews_manage') || isSuperAdmin();
+    }
+
     // Notifications: website/admin can create, admin staff can read/manage
     match /notifications/{id} {
       allow create: if true; // Written by website (order placed, message, new customer) and admin

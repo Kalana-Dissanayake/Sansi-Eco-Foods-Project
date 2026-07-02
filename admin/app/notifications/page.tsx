@@ -21,8 +21,8 @@ import ConfirmationModal from '../../components/ui/ConfirmationModal';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
-type NotificationType = 'order_placed' | 'message' | 'stock_alert' | 'order_cancelled' | 'new_customer';
-type FilterTab = 'all' | 'unread' | 'orders' | 'messages' | 'stock_alerts';
+type NotificationType = 'order_placed' | 'message' | 'stock_alert' | 'order_cancelled' | 'new_customer' | 'review';
+type FilterTab = 'all' | 'unread' | 'orders' | 'messages' | 'stock_alerts' | 'reviews';
 
 interface Notification {
   id: string;
@@ -60,6 +60,7 @@ const NOTIF_META: Record<NotificationType, { icon: string; bgColor: string; text
   stock_alert:     { icon: '⚠️', bgColor: 'bg-amber-50',   textColor: 'text-amber-700',   label: 'Stock Alert' },
   order_cancelled: { icon: '❌', bgColor: 'bg-rose-50',    textColor: 'text-rose-700',    label: 'Cancellation' },
   new_customer:    { icon: '👤', bgColor: 'bg-sky-50',     textColor: 'text-sky-700',     label: 'New Customer' },
+  review:          { icon: '⭐', bgColor: 'bg-yellow-50',  textColor: 'text-yellow-700',  label: 'Review' },
 };
 
 const FILTER_TABS: { key: FilterTab; label: string; icon: string }[] = [
@@ -68,6 +69,7 @@ const FILTER_TABS: { key: FilterTab; label: string; icon: string }[] = [
   { key: 'orders',       label: 'Orders',       icon: '🛒' },
   { key: 'messages',     label: 'Messages',     icon: '✉️' },
   { key: 'stock_alerts', label: 'Stock Alerts', icon: '⚠️' },
+  { key: 'reviews',      label: 'Reviews',      icon: '⭐' },
 ];
 
 function formatDate(ts: any): string {
@@ -238,6 +240,7 @@ export default function NotificationsPage() {
     if (filterTab === 'orders') return n.type === 'order_placed' || n.type === 'order_cancelled';
     if (filterTab === 'messages') return n.type === 'message';
     if (filterTab === 'stock_alerts') return n.type === 'stock_alert';
+    if (filterTab === 'reviews') return n.type === 'review';
     return true;
   });
 
@@ -258,15 +261,20 @@ export default function NotificationsPage() {
           {/* Filter tabs */}
           <div className="flex bg-white p-1 rounded-xl border border-slate-100 shadow-sm self-start text-xs font-bold gap-0.5 flex-wrap">
             {FILTER_TABS.map((tab) => {
-              const count = tab.key === 'all'
-                ? notifications.length
-                : tab.key === 'unread'
-                ? unreadCount
-                : tab.key === 'orders'
-                ? notifications.filter((n) => n.type === 'order_placed' || n.type === 'order_cancelled').length
-                : tab.key === 'messages'
-                ? notifications.filter((n) => n.type === 'message').length
-                : notifications.filter((n) => n.type === 'stock_alert').length;
+              let count = 0;
+              if (tab.key === 'all') {
+                count = notifications.length;
+              } else if (tab.key === 'unread') {
+                count = unreadCount;
+              } else if (tab.key === 'orders') {
+                count = notifications.filter((n) => n.type === 'order_placed' || n.type === 'order_cancelled').length;
+              } else if (tab.key === 'messages') {
+                count = notifications.filter((n) => n.type === 'message').length;
+              } else if (tab.key === 'stock_alerts') {
+                count = notifications.filter((n) => n.type === 'stock_alert').length;
+              } else if (tab.key === 'reviews') {
+                count = notifications.filter((n) => n.type === 'review').length;
+              }
 
               return (
                 <button
@@ -456,6 +464,29 @@ export default function NotificationsPage() {
                             className="px-3 py-1.5 bg-sky-500 text-white text-[11px] font-bold rounded-lg hover:bg-sky-600 transition-colors"
                           >
                             View Customers →
+                          </Link>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Review panel */}
+                    {selected.type === 'review' && (
+                      <div className="border border-yellow-100 bg-yellow-50/40 rounded-xl p-4 space-y-3">
+                        <h4 className="text-xs font-extrabold text-yellow-600 uppercase tracking-wider">⭐ New Review</h4>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="text-xs font-bold text-slate-800">
+                              Product: {selected.productName || 'Product'}
+                            </div>
+                            {selected.customerName && (
+                              <div className="text-[11px] text-slate-500 mt-0.5">Submitted by: {selected.customerName}</div>
+                            )}
+                          </div>
+                          <Link
+                            href="/reviews"
+                            className="px-3 py-1.5 bg-yellow-500 text-white text-[11px] font-bold rounded-lg hover:bg-yellow-600 transition-colors"
+                          >
+                            Moderate Review →
                           </Link>
                         </div>
                       </div>

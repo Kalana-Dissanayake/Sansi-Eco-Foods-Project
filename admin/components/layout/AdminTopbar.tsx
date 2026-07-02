@@ -15,7 +15,7 @@ interface AdminTopbarProps {
 
 interface NotificationItem {
   id: string;
-  type: 'order_placed' | 'message' | 'stock_alert' | 'order_cancelled' | 'new_customer';
+  type: 'order_placed' | 'message' | 'stock_alert' | 'order_cancelled' | 'new_customer' | 'review';
   title: string;
   body: string;
   read: boolean;
@@ -29,6 +29,7 @@ const NOTIF_META: Record<NotificationItem['type'], { icon: string; color: string
   stock_alert:     { icon: '⚠️', color: 'text-amber-600' },
   order_cancelled: { icon: '❌', color: 'text-rose-600' },
   new_customer:    { icon: '👤', color: 'text-sky-600' },
+  review:          { icon: '⭐', color: 'text-yellow-600' },
 };
 
 export default function AdminTopbar({ title, description, pendingOrders = 0, userName }: AdminTopbarProps) {

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { useCart } from '../../context/CartContext';
+import ReviewForm from './ReviewForm';
 import type { Product } from '../../../shared/types';
 
 interface ProductDetailViewProps {
@@ -320,6 +321,28 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Customer Review Form */}
+      <div className="col-12" style={{ marginTop: '12px' }}>
+        <hr style={{ borderColor: 'var(--gray-200)', margin: '8px 0 24px' }} />
+        <h3
+          style={{
+            fontFamily: 'var(--font-heading)',
+            fontWeight: 700,
+            fontSize: '20px',
+            color: 'var(--dark)',
+            marginBottom: '16px',
+          }}
+        >
+          <i className="fas fa-star me-2" style={{ color: 'var(--secondary)' }} />
+          Customer Reviews
+        </h3>
+        <ReviewForm
+          productId={product.id}
+          productName={product.name}
+          productSlug={product.slug}
+        />
       </div>
     </div>
   );

@@ -29,6 +29,7 @@ import type {
   ContactMessage,
   DeliveryAddress,
   NotificationType,
+  Review,
 } from '../../shared/types';
 
 // ─── Notification Helper (fire-and-forget) ──────────────────────────────────
@@ -626,5 +627,92 @@ export async function cancelOrder(
       success: false,
       error: error instanceof Error ? error.message : 'Failed to cancel order.',
     };
+  }
+}
+
+// ─── Reviews ──────────────────────────────────────────────────────────────────
+
+export async function submitReview(data: {
+  customerId: string;
+  productId: string;
+  productName: string;
+  productSlug: string;
+  reviewerName: string;
+  location: string;
+  rating: number;
+  text: string;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Check if this customer already submitted a review for this product
+    const existing = query(
+      collection(db, 'reviews'),
+      where('customerId', '==', data.customerId),
+      where('productId', '==', data.productId),
+      limit(1)
+    );
+    const existingSnap = await getDocs(existing);
+    if (!existingSnap.empty) {
+      return { success: false, error: 'You have already submitted a review for this product.' };
+    }
+
+    await addDoc(collection(db, 'reviews'), {
+      ...data,
+      status: 'pending',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
+    // Create a review notification for the admin panel
+    await createNotification({
+      type: 'review',
+      title: 'New Review Submitted',
+      body: `${data.reviewerName} submitted a ${data.rating}-star review for "${data.productName}".`,
+      productId: data.productId,
+      productName: data.productName,
+      customerId: data.customerId,
+      customerName: data.reviewerName,
+      linkTo: '/reviews',
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error submitting review:', error);
+    return { success: false, error: 'Failed to submit review. Please try again.' };
+  }
+}
+
+export async function getApprovedReviews(maxCount = 12): Promise<Review[]> {
+  try {
+    const q = query(
+      collection(db, 'reviews'),
+      where('status', '==', 'approved'),
+      orderBy('createdAt', 'desc'),
+      limit(maxCount)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Review));
+  } catch (error) {
+    console.error('Error fetching approved reviews:', error);
+    return [];
+  }
+}
+
+export async function getCustomerReviewForProduct(
+  customerId: string,
+  productId: string
+): Promise<Review | null> {
+  try {
+    const q = query(
+      collection(db, 'reviews'),
+      where('customerId', '==', customerId),
+      where('productId', '==', productId),
+      limit(1)
+    );
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    return { id: snap.docs[0].id, ...snap.docs[0].data() } as Review;
+  } catch (error) {
+    console.error('Error fetching customer review:', error);
+    return null;
   }
 }

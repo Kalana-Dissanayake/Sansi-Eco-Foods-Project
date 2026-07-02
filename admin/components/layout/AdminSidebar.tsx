@@ -41,6 +41,7 @@ const SECTIONS: NavSection[] = [
       { href: '/orders', label: 'Orders', icon: '📦', permission: 'orders_view', badgeType: 'orders' },
       { href: '/products', label: 'Products', icon: '🛍️', permission: 'menu_view' },
       { href: '/categories', label: 'Categories', icon: '🏷️', permission: 'menu_view' },
+      { href: '/reviews', label: 'Reviews', icon: '⭐', permission: 'reviews_manage' },
       { href: '/customers', label: 'Customers', icon: '👥', permission: 'customers_view' },
       { href: '/staff', label: 'Staff & Roles', icon: '🔑', permission: 'staff_manage' },
     ],

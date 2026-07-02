@@ -5,7 +5,7 @@ import AboutSnippet from '../components/home/AboutSnippet';
 import FeaturesSection from '../components/home/FeaturesSection';
 import FeaturedProducts from '../components/home/FeaturedProducts';
 import TestimonialsSection from '../components/home/TestimonialsSection';
-import { getSettings, getFeaturedProducts, getProducts } from '../lib/firestore';
+import { getSettings, getFeaturedProducts, getProducts, getApprovedReviews } from '../lib/firestore';
 
 export const metadata: Metadata = {
   title: 'Sansi Eco Foods – Natural Dehydrated Fruit Snacks | Sri Lanka',
@@ -26,6 +26,8 @@ export default async function HomePage() {
     featuredProducts = allProducts.slice(0, 4);
   }
 
+  const approvedReviews = await getApprovedReviews(9);
+
   return (
     <>
       {/* Hero Carousel */}
@@ -34,11 +36,11 @@ export default async function HomePage() {
       {/* About Snippet */}
       <AboutSnippet />
 
-      {/* Features Strip */}
-      <FeaturesSection />
-
       {/* Featured Products */}
       <FeaturedProducts products={featuredProducts} />
+
+      {/* Features Strip */}
+      <FeaturesSection />
 
       {/* CTA Banner */}
       <section className="section-padding cta-banner">
@@ -74,7 +76,7 @@ export default async function HomePage() {
       </section>
 
       {/* Testimonials */}
-      <TestimonialsSection />
+      <TestimonialsSection reviews={approvedReviews} />
 
       {/* WhatsApp floating button */}
       {settings?.whatsappNumber && (

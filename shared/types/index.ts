@@ -200,6 +200,7 @@ export interface RolePermissions {
   reports_view: boolean;
   messages_view: boolean;
   export_view: boolean;
+  reviews_manage: boolean;
 }
 
 export interface Role {
@@ -267,6 +268,25 @@ export interface ContactMessage {
   createdAt: Timestamp;
 }
 
+// ─── Reviews ─────────────────────────────────────────────────────────────────
+
+export type ReviewStatus = 'pending' | 'approved' | 'rejected';
+
+export interface Review {
+  id: string;
+  customerId: string;
+  productId: string;
+  productName: string;
+  productSlug: string;
+  reviewerName: string;
+  location: string;
+  rating: number;         // 1–5
+  text: string;
+  status: ReviewStatus;   // pending | approved | rejected
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
 // ─── Notifications ────────────────────────────────────────────────────────────
 
 export type NotificationType =
@@ -274,7 +294,8 @@ export type NotificationType =
   | 'message'
   | 'stock_alert'
   | 'order_cancelled'
-  | 'new_customer';
+  | 'new_customer'
+  | 'review';
 
 export interface Notification {
   id: string;
