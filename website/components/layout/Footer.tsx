@@ -179,7 +179,7 @@ export default function Footer({
               {phone && (
                 <li className="mb-2 d-flex align-items-center gap-2">
                   <i className="fas fa-phone-alt" style={{ color: 'var(--secondary)', minWidth: '16px' }}></i>
-                  <a href={`tel:${phone}`} style={{ color: '#adb5bd', textDecoration: 'none' }}>
+                  <a href={`tel:${phone}`} className="footer-contact-link" style={{ color: '#adb5bd', textDecoration: 'none' }}>
                     {formatPhoneNumber(phone)}
                   </a>
                 </li>
@@ -187,7 +187,7 @@ export default function Footer({
               {email && (
                 <li className="mb-2 d-flex align-items-center gap-2">
                   <i className="fas fa-envelope" style={{ color: 'var(--secondary)', minWidth: '16px' }}></i>
-                  <a href={`mailto:${email}`} style={{ color: '#adb5bd', textDecoration: 'none' }}>
+                  <a href={`mailto:${email}`} className="footer-contact-link" style={{ color: '#adb5bd', textDecoration: 'none' }}>
                     {email}
                   </a>
                 </li>
@@ -198,7 +198,7 @@ export default function Footer({
                     href={`https://wa.me/${whatsappNumber}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn btn-sm"
+                    className="btn btn-sm footer-whatsapp-btn"
                     style={{
                       background: '#25D366',
                       color: '#fff',

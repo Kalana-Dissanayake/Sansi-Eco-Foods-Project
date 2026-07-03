@@ -1775,6 +1775,51 @@ img { max-width: 100%; }
   100% { transform: scale(1); }
 }
 
+/* ── Footer Link Animations ────────────────────────────────────────── */
+
+/* Quick links & Legal links hover slide */
+.footer-link {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease !important;
+  display: inline-block;
+}
+.footer-link:hover {
+  transform: translateX(4px);
+  color: var(--secondary) !important;
+}
+.footer-link i.fa-angle-right {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-block;
+}
+.footer-link:hover i.fa-angle-right {
+  transform: translateX(2px);
+}
+
+/* Contact Us text links hover shift */
+.footer-contact-link {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease !important;
+  display: inline-block;
+}
+.footer-contact-link:hover {
+  transform: translateX(4px);
+  color: var(--secondary) !important;
+}
+
+/* Footer WhatsApp button pulse and hover */
+.footer-whatsapp-btn {
+  animation: footerWhatsappPulse 2.5s infinite;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease !important;
+}
+@keyframes footerWhatsappPulse {
+  0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.45); }
+  70% { box-shadow: 0 0 0 8px rgba(37, 211, 102, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+}
+.footer-whatsapp-btn:hover {
+  transform: translateY(-2px) scale(1.03) !important;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4) !important;
+  animation: none;
+}
+
 
 /* ── PERFORMANCE SAFETY ───────────────────────────────────────────── */
 /* Disable all custom animations for users who prefer reduced motion */
