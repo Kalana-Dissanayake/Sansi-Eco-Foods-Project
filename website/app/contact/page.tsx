@@ -21,6 +21,7 @@ const CONTACT_INFO = {
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +33,7 @@ export default function ContactPage() {
     const result = await submitContactMessage(form);
     setSubmitting(false);
     if (result.success) {
+      setIsSubmitted(true);
       toast.success("Message sent! We'll get back to you soon.", { duration: 5000 });
       setForm({ name: '', email: '', subject: '', message: '' });
     } else {
@@ -69,15 +71,15 @@ export default function ContactPage() {
                   Have a question, want to place a bulk order, or just want to say hello?
                   We&apos;d love to hear from you!
                 </p>
-
+ 
                 <ul className="list-unstyled">
                   {[
                     { icon: 'fa-phone-alt', label: 'Call Us', value: CONTACT_INFO.phone, href: `tel:${CONTACT_INFO.phone}` },
                     { icon: 'fa-envelope', label: 'Email Us', value: CONTACT_INFO.email, href: `mailto:${CONTACT_INFO.email}` },
                     { icon: 'fa-map-marker-alt', label: 'Find Us', value: CONTACT_INFO.address, href: null },
                   ].map(({ icon, label, value, href }) => (
-                    <li key={label} className="mb-4 d-flex align-items-start gap-3">
-                      <div style={{ width: '42px', height: '42px', background: 'rgba(255,255,255,0.15)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <li key={label} className="mb-4 d-flex align-items-start gap-3 contact-info-list-item">
+                      <div className="contact-info-icon-wrapper" style={{ width: '42px', height: '42px', background: 'rgba(255,255,255,0.15)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <i className={`fas ${icon}`} style={{ color: 'var(--secondary)' }}></i>
                       </div>
                       <div>
@@ -91,9 +93,9 @@ export default function ContactPage() {
                     </li>
                   ))}
                 </ul>
-
+ 
                 <hr style={{ borderColor: 'rgba(255,255,255,0.2)', margin: '24px 0' }} />
-
+ 
                 <div>
                   <p style={{ fontWeight: 600, color: '#fff', marginBottom: '12px' }}>Follow Us</p>
                   <div className="d-flex gap-2 mb-4">
@@ -103,17 +105,18 @@ export default function ContactPage() {
                       { href: CONTACT_INFO.tiktok, icon: 'fa-tiktok' },
                     ].map(({ href, icon }) => (
                       <a key={icon} href={href} target="_blank" rel="noopener noreferrer"
+                        className="contact-social-icon"
                         style={{ width: '38px', height: '38px', background: 'rgba(255,255,255,0.15)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', textDecoration: 'none', transition: 'background 0.2s' }}>
                         <i className={`fab ${icon}`}></i>
                       </a>
                     ))}
                   </div>
-
+ 
                   <a
                     href={`https://wa.me/${CONTACT_INFO.whatsapp}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn w-100 py-2"
+                    className="btn w-100 py-2 whatsapp-btn-pulse"
                     style={{ background: '#25D366', color: '#fff', borderRadius: '30px', fontWeight: 600 }}
                   >
                     <i className="fab fa-whatsapp me-2"></i>
@@ -122,44 +125,66 @@ export default function ContactPage() {
                 </div>
               </div>
             </div>
-
+ 
             {/* Right: Contact Form */}
             <div className="col-lg-7">
               <div className="contact-form-card">
-                <h4 className="mb-4" style={{ fontFamily: 'var(--font-heading)', fontWeight: 700 }}>
-                  Send Us a Message
-                </h4>
-                <form onSubmit={handleSubmit} noValidate>
-                  <div className="row g-3">
-                    <div className="col-md-6">
-                      <label htmlFor="contact-name" className="form-label">Your Name *</label>
-                      <input id="contact-name" type="text" className="form-control" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="Kasun Perera" required />
+                {isSubmitted ? (
+                  <div className="contact-success-message text-center py-5">
+                    <div className="success-checkmark-wrapper mb-4">
+                      <i className="fas fa-check-circle fa-5x text-success animate-checkmark"></i>
                     </div>
-                    <div className="col-md-6">
-                      <label htmlFor="contact-email" className="form-label">Email Address *</label>
-                      <input id="contact-email" type="email" className="form-control" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} placeholder="you@example.com" required />
-                    </div>
-                    <div className="col-12">
-                      <label htmlFor="contact-subject" className="form-label">Subject</label>
-                      <input id="contact-subject" type="text" className="form-control" value={form.subject} onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value }))} placeholder="e.g., Bulk Order Inquiry" />
-                    </div>
-                    <div className="col-12">
-                      <label htmlFor="contact-message" className="form-label">Message *</label>
-                      <textarea id="contact-message" className="form-control" rows={6} value={form.message} onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))} placeholder="Tell us how we can help..." required />
-                    </div>
-                    <div className="col-12">
-                      <button type="submit" className="btn btn-primary px-5 py-2 w-100" style={{ borderRadius: '30px', fontWeight: 700, fontSize: '16px' }} disabled={submitting}>
-                        {submitting ? 'Sending...' : <><i className="fas fa-paper-plane me-2"></i>Send Message</>}
-                      </button>
-                    </div>
+                    <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700 }}>Thank You!</h3>
+                    <p className="text-muted mt-3" style={{ fontSize: '15px', lineHeight: '1.6' }}>
+                      Your message has been sent successfully. We will get back to you shortly.
+                    </p>
                   </div>
-                </form>
+                ) : (
+                  <>
+                    <h4 className="mb-4" style={{ fontFamily: 'var(--font-heading)', fontWeight: 700 }}>
+                      Send Us a Message
+                    </h4>
+                    <form onSubmit={handleSubmit} noValidate>
+                      <div className="row g-3">
+                        <div className="col-md-6">
+                          <div className="form-floating">
+                            <input id="contact-name" type="text" className="form-control" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="Kasun Perera" required />
+                            <label htmlFor="contact-name" style={{ color: '#666' }}>Your Name *</label>
+                          </div>
+                        </div>
+                        <div className="col-md-6">
+                          <div className="form-floating">
+                            <input id="contact-email" type="email" className="form-control" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} placeholder="you@example.com" required />
+                            <label htmlFor="contact-email" style={{ color: '#666' }}>Email Address *</label>
+                          </div>
+                        </div>
+                        <div className="col-12">
+                          <div className="form-floating">
+                            <input id="contact-subject" type="text" className="form-control" value={form.subject} onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value }))} placeholder="e.g., Bulk Order Inquiry" />
+                            <label htmlFor="contact-subject" style={{ color: '#666' }}>Subject</label>
+                          </div>
+                        </div>
+                        <div className="col-12">
+                          <div className="form-floating">
+                            <textarea id="contact-message" className="form-control" style={{ height: '150px' }} value={form.message} onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))} placeholder="Tell us how we can help..." required />
+                            <label htmlFor="contact-message" style={{ color: '#666' }}>Message *</label>
+                          </div>
+                        </div>
+                        <div className="col-12">
+                          <button type="submit" className="btn btn-primary px-5 py-2.5 w-100 btn-send-message" style={{ borderRadius: '30px', fontWeight: 700, fontSize: '16px' }} disabled={submitting}>
+                            {submitting ? 'Sending...' : <><i className="fas fa-paper-plane me-2"></i>Send Message</>}
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </>
+                )}
               </div>
             </div>
           </div>
-
+ 
           {/* Google Maps */}
-          <div className="mt-5 rounded-3 overflow-hidden" style={{ height: '400px', boxShadow: 'var(--shadow-md)' }}>
+          <div className="mt-5 rounded-3 overflow-hidden wow animate__fadeIn" data-wow-delay="0.1s" style={{ height: '400px', boxShadow: 'var(--shadow-md)' }}>
             <iframe
               title="Sansi Eco Foods location in Anamaduwa, Sri Lanka"
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63309.87!2d79.9!3d8.0!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3afc9c000000000%3A0x0!2sAnamaduwa%2C+Sri+Lanka!5e0!3m2!1sen!2slk!4v1"

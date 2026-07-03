@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '../../context/CartContext';
@@ -11,9 +12,17 @@ interface CartItemProps {
 
 export default function CartItem({ item }: CartItemProps) {
   const { updateQuantity, removeFromCart } = useCart();
+  const [isRemoving, setIsRemoving] = useState(false);
+
+  const handleRemove = () => {
+    setIsRemoving(true);
+    setTimeout(() => {
+      removeFromCart(item.productId);
+    }, 300);
+  };
 
   return (
-    <tr>
+    <tr className={`cart-item-row ${isRemoving ? 'removing-item' : ''}`}>
       {/* Product */}
       <td>
         <div className="d-flex align-items-center gap-3">
@@ -90,7 +99,7 @@ export default function CartItem({ item }: CartItemProps) {
       {/* Remove */}
       <td>
         <button
-          onClick={() => removeFromCart(item.productId)}
+          onClick={handleRemove}
           style={{
             background: 'none',
             border: 'none',

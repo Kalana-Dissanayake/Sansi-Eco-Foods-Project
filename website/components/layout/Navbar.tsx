@@ -326,11 +326,10 @@ export default function Navbar() {
             style={{ textDecoration: 'none' }}
           >
             <div
-              className="btn btn-primary rounded-circle d-flex align-items-center justify-content-center"
+              className={`btn btn-primary rounded-circle d-flex align-items-center justify-content-center ${cartBump ? 'cart-bump-animation' : ''}`}
               style={{
                 width: '42px',
                 height: '42px',
-                transform: cartBump ? 'scale(1.2)' : 'scale(1)',
                 transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
               }}
             >

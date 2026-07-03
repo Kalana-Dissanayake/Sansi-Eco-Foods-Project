@@ -22,20 +22,20 @@ export default function CartPage() {
 
   if (itemCount === 0) {
     return (
-      <section className="section-padding">
+      <section className="section-padding cart-empty-container">
         <div className="container text-center py-5">
-          <div className="mb-4">
+          <div className="mb-4 cart-empty-icon">
             <i className="fas fa-shopping-basket fa-5x" style={{ color: 'var(--primary-light)' }}></i>
           </div>
-          <h2 style={{ fontFamily: 'var(--font-heading)', marginBottom: '16px' }}>
+          <h2 className="cart-empty-title" style={{ fontFamily: 'var(--font-heading)', marginBottom: '16px' }}>
             Your cart is empty
           </h2>
-          <p style={{ color: '#888', marginBottom: '32px' }}>
+          <p className="cart-empty-text" style={{ color: '#888', marginBottom: '32px' }}>
             You haven&apos;t added any products yet. Start exploring our natural snacks!
           </p>
           <Link
             href="/products"
-            className="btn btn-primary px-5 py-2"
+            className="btn btn-primary px-5 py-2 cart-empty-btn"
             style={{ borderRadius: '30px', fontWeight: 700 }}
           >
             Shop Now <i className="fas fa-arrow-right ms-2"></i>

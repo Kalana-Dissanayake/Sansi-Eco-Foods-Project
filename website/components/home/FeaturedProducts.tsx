@@ -38,7 +38,7 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
         <div className="text-center mt-5">
           <Link
             href="/products"
-            className="btn btn-primary px-5 py-2"
+            className="btn btn-primary px-5 py-2 featured-cta-btn"
             style={{ borderRadius: '30px', fontWeight: 600 }}
           >
             View All Products <i className="fas fa-arrow-right ms-2"></i>

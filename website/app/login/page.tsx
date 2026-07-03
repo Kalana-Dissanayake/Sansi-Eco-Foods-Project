@@ -36,37 +36,37 @@ function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 bg-white rounded-3 shadow-sm" style={{ border: '1px solid var(--gray-200)' }}>
-      <div className="mb-3">
-        <label htmlFor="login-email" className="form-label" style={{ fontWeight: 600 }}>Email Address</label>
+    <form onSubmit={handleSubmit} className="p-4 bg-white rounded-3 shadow-sm login-card" style={{ border: '1px solid var(--gray-200)' }}>
+      <div className="form-floating mb-3">
         <input
           id="login-email"
           type="email"
-          className="form-control py-2"
+          className="form-control"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="yourname@example.com"
           required
         />
+        <label htmlFor="login-email" style={{ color: '#666' }}>Email Address</label>
       </div>
 
-      <div className="mb-4">
-        <label htmlFor="login-password" className="form-label" style={{ fontWeight: 600 }}>Password</label>
+      <div className="form-floating mb-4">
         <input
           id="login-password"
           type="password"
-          className="form-control py-2"
+          className="form-control"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••••"
           required
         />
+        <label htmlFor="login-password" style={{ color: '#666' }}>Password</label>
       </div>
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="btn btn-primary w-100 py-2.5 mb-3"
+        className="btn btn-primary w-100 py-2.5 mb-3 btn-signin"
         style={{ borderRadius: '30px', fontWeight: 700, fontSize: '15px' }}
       >
         {isSubmitting ? (
@@ -81,7 +81,7 @@ function LoginForm() {
 
       <div className="text-center mt-3" style={{ fontSize: '14px' }}>
         Don&apos;t have an account?{' '}
-        <Link href={`/signup${searchParams.toString() ? '?' + searchParams.toString() : ''}`} style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>
+        <Link href={`/signup${searchParams.toString() ? '?' + searchParams.toString() : ''}`} className="auth-link" style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>
           Sign Up Here
         </Link>
       </div>

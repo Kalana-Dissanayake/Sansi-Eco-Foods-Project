@@ -40,6 +40,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   const [mainImage, setMainImage] = useState(product.images[0] ?? '/images/products/placeholder.png');
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'description' | 'ingredients' | 'delivery'>('description');
+  const [added, setAdded] = useState(false);
 
   // Track view on mount
   useState(() => { trackViewContent(product); });
@@ -47,6 +48,8 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   const handleAddToCart = () => {
     if (!product.inStock) return;
     addToCart(product, quantity);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1500);
     toast.success(`${product.name} × ${quantity} added to cart!`, { icon: '🛒' });
 
     try {
@@ -71,6 +74,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
       {/* Left: Image Gallery */}
       <div className="col-lg-6">
         <div
+          className="product-detail-image-container"
           style={{
             background: 'var(--light)',
             borderRadius: '12px',
@@ -84,6 +88,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
             src={mainImage}
             alt={`${product.name} ${product.weightGrams}g - Sansi Eco Foods Sri Lanka`}
             fill
+            className="product-detail-image"
             style={{ objectFit: 'cover' }}
             sizes="(max-width: 992px) 100vw, 50vw"
             priority
@@ -121,7 +126,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
           </div>
         )}
       </div>
-
+ 
       {/* Right: Product Info */}
       <div className="col-lg-6">
         {/* Breadcrumb */}
@@ -132,18 +137,18 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
             <li className="breadcrumb-item active">{product.name}</li>
           </ol>
         </nav>
-
+ 
         <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 'clamp(24px, 3vw, 34px)', marginBottom: '12px' }}>
           {product.name}
         </h1>
-
+ 
         {/* Health Tags */}
-        <div className="d-flex flex-wrap gap-2 mb-3">
+        <div className="d-flex flex-wrap gap-2 mb-3 detail-health-tags">
           {product.healthTags.map((tag) => (
-            <span key={tag} className="badge-natural">{tag}</span>
+            <span key={tag} className="badge-natural detail-health-tag">{tag}</span>
           ))}
         </div>
-
+ 
         {/* SKU & Stock */}
         <div className="d-flex align-items-center gap-3 mb-3" style={{ fontSize: '14px' }}>
           <span style={{ color: '#888' }}>SKU: {product.skuCode}</span>
@@ -158,7 +163,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
             </span>
           )}
         </div>
-
+ 
         {/* Price */}
         <div className="d-flex align-items-center gap-3 flex-wrap mb-4">
           <span style={{ fontSize: '32px', fontWeight: 800, color: 'var(--primary)', fontFamily: 'var(--font-heading)' }}>
@@ -170,7 +175,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
             </span>
           )}
           {product.compareAtPriceLKR > product.priceLKR && (
-            <span className="badge px-2.5 py-1.5" style={{ background: '#e74c3c', color: '#fff', fontSize: '12px', borderRadius: '4px', fontWeight: 600 }}>
+            <span className="badge px-2.5 py-1.5 save-discount-badge" style={{ background: '#e74c3c', color: '#fff', fontSize: '12px', borderRadius: '4px', fontWeight: 600 }}>
               Save Rs. {(product.compareAtPriceLKR - product.priceLKR).toLocaleString()}
             </span>
           )}
@@ -204,34 +209,30 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
         {/* Add to Cart & View Cart */}
         <div className="d-flex align-items-center gap-3 mb-4 flex-wrap flex-sm-nowrap" style={{ maxWidth: '450px' }}>
           <button
-            className="btn btn-primary px-4 py-2.5 d-flex align-items-center justify-content-center gap-2"
+            className={`btn btn-primary btn-detail-add-to-cart px-4 py-2.5 d-flex align-items-center justify-content-center gap-2 ${added ? 'clicked-bump' : ''}`}
             style={{
               borderRadius: '30px',
               fontWeight: 700,
               fontSize: '15px',
               flex: 2,
               height: '48px',
-              transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
               boxShadow: '0 4px 14px rgba(0, 210, 106, 0.25)',
             }}
             onClick={handleAddToCart}
             disabled={!product.inStock}
-            onMouseEnter={(e) => {
-              if (product.inStock) {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 210, 106, 0.35)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'none';
-              e.currentTarget.style.boxShadow = '0 4px 14px rgba(0, 210, 106, 0.25)';
-            }}
           >
             {product.inStock ? (
-              <>
-                <i className="fas fa-shopping-bag" style={{ fontSize: '15px' }}></i>
-                Add to Cart
-              </>
+              added ? (
+                <>
+                  <i className="fas fa-check-circle text-white checkmark-flash" style={{ fontSize: '15px' }}></i>
+                  ✓ Added!
+                </>
+              ) : (
+                <>
+                  <i className="fas fa-shopping-bag" style={{ fontSize: '15px' }}></i>
+                  Add to Cart
+                </>
+              )
             ) : (
               'Out of Stock'
             )}
@@ -303,7 +304,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
               </button>
             ))}
           </div>
-          <div style={{ padding: '16px 0', color: '#555', lineHeight: 1.8, fontSize: '14px' }}>
+          <div key={activeTab} className="tab-fade-in" style={{ padding: '16px 0', color: '#555', lineHeight: 1.8, fontSize: '14px' }}>
             {activeTab === 'description' && <p>{product.description}</p>}
             {activeTab === 'ingredients' && (
               <p><strong>Ingredients:</strong> {product.ingredients}</p>

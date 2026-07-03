@@ -26,6 +26,7 @@ export default function CartSummary({
 }: CartSummaryProps) {
   const [couponInput, setCouponInput] = useState(coupon?.code ?? '');
   const [validatingCoupon, setValidatingCoupon] = useState(false);
+  const [couponStatus, setCouponStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const router = useRouter();
 
   const total = Math.max(0, subtotal + (shipping ?? 0) - couponDiscount);
@@ -33,13 +34,16 @@ export default function CartSummary({
   const handleApplyCoupon = async () => {
     if (!couponInput.trim()) return;
     setValidatingCoupon(true);
+    setCouponStatus('idle');
     const result = await validateCoupon(couponInput.trim(), subtotal);
     setValidatingCoupon(false);
 
     if (result.valid && result.coupon) {
+      setCouponStatus('success');
       onCouponApply(result.coupon, result.discount, couponInput.trim().toUpperCase());
       toast.success(`Coupon applied! You save Rs. ${result.discount.toLocaleString()}`);
     } else {
+      setCouponStatus('error');
       onCouponApply(null, 0, '');
       toast.error(result.error ?? 'Invalid coupon');
     }
@@ -47,6 +51,7 @@ export default function CartSummary({
 
   const handleRemoveCoupon = () => {
     setCouponInput('');
+    setCouponStatus('idle');
     onCouponApply(null, 0, '');
     toast.success('Coupon removed');
   };
@@ -113,7 +118,7 @@ export default function CartSummary({
 
       <div className="d-flex justify-content-between mb-4">
         <span style={{ fontWeight: 700, fontSize: '17px' }}>Total</span>
-        <span style={{ fontWeight: 800, fontSize: '20px', color: 'var(--primary)' }}>
+        <span key={total} className="total-highlight-flash" style={{ fontWeight: 800, fontSize: '20px', color: 'var(--primary)' }}>
           Rs. {total.toLocaleString()}
         </span>
       </div>
@@ -130,7 +135,7 @@ export default function CartSummary({
             value={couponInput}
             onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
             placeholder="Enter code"
-            className="form-control"
+            className={`form-control ${validatingCoupon ? 'coupon-input-spin' : ''} ${couponStatus === 'error' ? 'coupon-error-shake' : ''} ${couponStatus === 'success' ? 'coupon-success-pop' : ''}`}
             style={{ fontSize: '13px' }}
             onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
             disabled={!!coupon}
@@ -159,7 +164,7 @@ export default function CartSummary({
       {showCheckoutButton && (
         <button
           onClick={handleCheckout}
-          className="btn btn-primary w-100 py-2"
+          className="btn btn-primary w-100 py-2 btn-checkout-pulse"
           style={{ borderRadius: '30px', fontWeight: 700, fontSize: '16px' }}
         >
           Proceed to Checkout <i className="fas fa-arrow-right ms-2"></i>

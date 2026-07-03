@@ -215,259 +215,311 @@ function SignupForm() {
     }
   };
 
-  if (step === 'otp') {
-    return (
-      <div className="p-4 bg-white rounded-3 shadow-sm animate__animated animate__fadeIn" style={{ border: '1px solid var(--gray-200)' }}>
-        <h5 className="mb-3 text-dark text-center" style={{ fontWeight: 700 }}>Verify Your Email</h5>
-        <p className="text-muted text-center mb-4" style={{ fontSize: '14px', lineHeight: '1.5' }}>
-          We have sent a 6-digit passcode to <strong style={{ color: 'var(--primary)' }}>{email}</strong>.
-          Please enter the code below to complete registration.
-        </p>
-
-        {/* 6 Digit Inputs */}
-        <div className="d-flex justify-content-center gap-2 mb-4">
-          {otpValues.map((val, idx) => (
-            <input
-              key={idx}
-              ref={(el) => { inputRefs.current[idx] = el; }}
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={1}
-              value={val}
-              onChange={(e) => handleOtpChange(e.target.value, idx)}
-              onKeyDown={(e) => handleOtpKeyDown(e, idx)}
-              onPaste={handleOtpPaste}
-              className="form-control text-center"
-              style={{
-                width: '45px',
-                height: '52px',
-                fontSize: '22px',
-                fontWeight: '700',
-                borderRadius: '10px',
-                border: val ? '2px solid #00d26a' : '2px solid #ced4da',
-                boxShadow: val ? '0 0 8px rgba(0, 210, 106, 0.25)' : 'none',
-                transition: 'all 0.2s ease-in-out',
-                color: 'var(--dark)'
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Verification & Actions */}
-        <button
-          type="button"
-          onClick={handleVerifyOtp}
-          disabled={isSubmitting}
-          className="btn btn-primary w-100 py-2.5 mb-3"
-          style={{ borderRadius: '30px', fontWeight: 700, fontSize: '15px' }}
-        >
-          {isSubmitting ? (
-            <span className="d-flex align-items-center justify-content-center gap-2">
-              <Spinner size="sm" color="#fff" />
-              Verifying & Registering...
-            </span>
-          ) : (
-            'Verify & Create Account'
-          )}
-        </button>
-
-        <div className="d-flex justify-content-between align-items-center mt-3" style={{ fontSize: '14px' }}>
-          {resendCooldown > 0 ? (
-            <span className="text-muted">
-              Resend code in <strong>{resendCooldown}s</strong>
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={handleResendOtp}
-              disabled={isResending}
-              className="btn btn-link p-0 text-decoration-none"
-              style={{ color: 'var(--primary)', fontWeight: 600 }}
-            >
-              {isResending ? 'Resending...' : 'Resend Passcode'}
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setStep('form')}
-            className="btn btn-link p-0 text-decoration-none text-secondary"
-            style={{ fontWeight: 600 }}
-          >
-            Back to Edit
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const hasMinLength = password.length >= 8;
+  const hasNumber = /\d/.test(password);
+  const hasUppercase = /[A-Z]/.test(password);
 
   return (
-    <form onSubmit={handleSendOtp} className="p-4 bg-white rounded-3 shadow-sm" style={{ border: '1px solid var(--gray-200)' }}>
-      {/* First & Last Name */}
-      <div className="row">
-        <div className="col-md-6 mb-3">
-          <label htmlFor="signup-firstname" className="form-label" style={{ fontWeight: 600 }}>First Name</label>
-          <input
-            id="signup-firstname"
-            type="text"
-            className="form-control"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            placeholder="Kasun"
-            required
-          />
+    <div className="signup-wizard-container" style={{ overflow: 'hidden', position: 'relative' }}>
+      <div className="signup-wizard-track d-flex" style={{
+        width: '200%',
+        transform: step === 'otp' ? 'translateX(-50%)' : 'translateX(0)',
+        transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
+        willChange: 'transform'
+      }}>
+        {/* Stage 1: Registration Form */}
+        <div className="signup-stage-pane" style={{ width: '50%', flexShrink: 0, padding: '4px' }}>
+          <form onSubmit={handleSendOtp} className="p-4 bg-white rounded-3 shadow-sm signup-card animate__animated animate__fadeIn" style={{ border: '1px solid var(--gray-200)' }}>
+            {/* First & Last Name */}
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <div className="form-floating">
+                  <input
+                    id="signup-firstname"
+                    type="text"
+                    className="form-control"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Kasun"
+                    required
+                  />
+                  <label htmlFor="signup-firstname" style={{ color: '#666' }}>First Name</label>
+                </div>
+              </div>
+              <div className="col-md-6 mb-3">
+                <div className="form-floating">
+                  <input
+                    id="signup-lastname"
+                    type="text"
+                    className="form-control"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Perera"
+                    required
+                  />
+                  <label htmlFor="signup-lastname" style={{ color: '#666' }}>Last Name</label>
+                </div>
+              </div>
+            </div>
+
+            <div className="row">
+              {/* Email */}
+              <div className="col-md-6 mb-3">
+                <div className="form-floating">
+                  <input
+                    id="signup-email"
+                    type="email"
+                    className="form-control"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="kasun@example.com"
+                    required
+                  />
+                  <label htmlFor="signup-email" style={{ color: '#666' }}>Email Address</label>
+                </div>
+              </div>
+
+              {/* Phone */}
+              <div className="col-md-6 mb-3">
+                <div className="form-floating">
+                  <input
+                    id="signup-phone"
+                    type="tel"
+                    className="form-control"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="077XXXXXXX"
+                    required
+                  />
+                  <label htmlFor="signup-phone" style={{ color: '#666' }}>Phone Number</label>
+                </div>
+              </div>
+            </div>
+
+            <hr className="my-3 text-muted" />
+            <h6 className="mb-3 text-dark" style={{ fontWeight: 700 }}>Delivery Address Details</h6>
+
+            {/* Address line 1 */}
+            <div className="mb-3">
+              <div className="form-floating">
+                <input
+                  id="signup-address"
+                  type="text"
+                  className="form-control"
+                  value={line1}
+                  onChange={(e) => setLine1(e.target.value)}
+                  placeholder="No 12, Main Street"
+                  required
+                />
+                <label htmlFor="signup-address" style={{ color: '#666' }}>Address Line 1</label>
+              </div>
+            </div>
+
+            <div className="row">
+              {/* City */}
+              <div className="col-md-6 mb-3">
+                <div className="form-floating">
+                  <input
+                    id="signup-city"
+                    type="text"
+                    className="form-control"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="Colombo 03"
+                    required
+                  />
+                  <label htmlFor="signup-city" style={{ color: '#666' }}>City</label>
+                </div>
+              </div>
+
+              {/* District */}
+              <div className="col-md-6 mb-3">
+                <div className="form-floating">
+                  <select
+                    id="signup-district"
+                    className="form-select form-control"
+                    value={district}
+                    onChange={(e) => setDistrict(e.target.value)}
+                    required
+                    style={{ paddingTop: '1.625rem', paddingBottom: '0.625rem' }}
+                  >
+                    <option value="">Select District</option>
+                    {DISTRICTS.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                  <label htmlFor="signup-district" style={{ color: '#666' }}>District</label>
+                </div>
+              </div>
+            </div>
+
+            <hr className="my-3 text-muted" />
+            <h6 className="mb-3 text-dark" style={{ fontWeight: 700 }}>Security</h6>
+
+            <div className="row">
+              {/* Password */}
+              <div className="col-md-6 mb-3">
+                <div className="form-floating">
+                  <input
+                    id="signup-pass"
+                    type="password"
+                    className="form-control"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Min 6 chars"
+                    required
+                  />
+                  <label htmlFor="signup-pass" style={{ color: '#666' }}>Password *</label>
+                </div>
+
+                {/* Password strength checklist */}
+                {password.length > 0 && (
+                  <div className="password-checklist mt-2 ps-1" style={{ fontSize: '12px' }}>
+                    <div className={`d-flex align-items-center gap-1.5 mb-1 ${hasMinLength ? 'text-success criterion-met' : 'text-danger'}`} style={{ transition: 'color 0.2s' }}>
+                      <span style={{ minWidth: '15px' }}>{hasMinLength ? '✓' : '✗'}</span>
+                      <span>At least 8 characters</span>
+                    </div>
+                    <div className={`d-flex align-items-center gap-1.5 mb-1 ${hasNumber ? 'text-success criterion-met' : 'text-danger'}`} style={{ transition: 'color 0.2s' }}>
+                      <span style={{ minWidth: '15px' }}>{hasNumber ? '✓' : '✗'}</span>
+                      <span>Contains a number</span>
+                    </div>
+                    <div className={`d-flex align-items-center gap-1.5 mb-1 ${hasUppercase ? 'text-success criterion-met' : 'text-danger'}`} style={{ transition: 'color 0.2s' }}>
+                      <span style={{ minWidth: '15px' }}>{hasUppercase ? '✓' : '✗'}</span>
+                      <span>Contains uppercase</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Confirm password */}
+              <div className="col-md-6 mb-4">
+                <div className="form-floating">
+                  <input
+                    id="signup-conf-pass"
+                    type="password"
+                    className="form-control"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                  />
+                  <label htmlFor="signup-conf-pass" style={{ color: '#666' }}>Confirm Password</label>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="btn btn-primary w-100 py-2.5 mb-3 btn-signup"
+              style={{ borderRadius: '30px', fontWeight: 700, fontSize: '15px' }}
+            >
+              {isSubmitting ? (
+                <span className="d-flex align-items-center justify-content-center gap-2">
+                  <Spinner size="sm" color="#fff" />
+                  Sending Code...
+                </span>
+              ) : (
+                'Register Account'
+              )}
+            </button>
+
+            <div className="text-center mt-3" style={{ fontSize: '14px' }}>
+              Already have an account?{' '}
+              <Link href={`/login${searchParams.toString() ? '?' + searchParams.toString() : ''}`} className="auth-link" style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>
+                Sign In Here
+              </Link>
+            </div>
+          </form>
         </div>
-        <div className="col-md-6 mb-3">
-          <label htmlFor="signup-lastname" className="form-label" style={{ fontWeight: 600 }}>Last Name</label>
-          <input
-            id="signup-lastname"
-            type="text"
-            className="form-control"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            placeholder="Perera"
-            required
-          />
+
+        {/* Stage 2: OTP Verification */}
+        <div className="signup-stage-pane" style={{ width: '50%', flexShrink: 0, padding: '4px' }}>
+          <div className="p-4 bg-white rounded-3 shadow-sm signup-card animate__animated animate__fadeIn" style={{ border: '1px solid var(--gray-200)' }}>
+            <h5 className="mb-3 text-dark text-center" style={{ fontWeight: 700 }}>Verify Your Email</h5>
+            <p className="text-muted text-center mb-4" style={{ fontSize: '14px', lineHeight: '1.5' }}>
+              We have sent a 6-digit passcode to <strong style={{ color: 'var(--primary)' }}>{email}</strong>.
+              Please enter the code below to complete registration.
+            </p>
+
+            {/* 6 Digit Inputs */}
+            <div className="d-flex justify-content-center gap-2 mb-4">
+              {otpValues.map((val, idx) => (
+                <input
+                  key={idx}
+                  ref={(el) => { inputRefs.current[idx] = el; }}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={1}
+                  value={val}
+                  onChange={(e) => handleOtpChange(e.target.value, idx)}
+                  onKeyDown={(e) => handleOtpKeyDown(e, idx)}
+                  onPaste={handleOtpPaste}
+                  className="form-control text-center"
+                  style={{
+                    width: '45px',
+                    height: '52px',
+                    fontSize: '22px',
+                    fontWeight: '700',
+                    borderRadius: '10px',
+                    border: val ? '2px solid #00d26a' : '2px solid #ced4da',
+                    boxShadow: val ? '0 0 8px rgba(0, 210, 106, 0.25)' : 'none',
+                    transition: 'all 0.2s ease-in-out',
+                    color: 'var(--dark)'
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Verification & Actions */}
+            <button
+              type="button"
+              onClick={handleVerifyOtp}
+              disabled={isSubmitting}
+              className="btn btn-primary w-100 py-2.5 mb-3 btn-signup"
+              style={{ borderRadius: '30px', fontWeight: 700, fontSize: '15px' }}
+            >
+              {isSubmitting ? (
+                <span className="d-flex align-items-center justify-content-center gap-2">
+                  <Spinner size="sm" color="#fff" />
+                  Verifying & Registering...
+                </span>
+              ) : (
+                'Verify & Create Account'
+              )}
+            </button>
+
+            <div className="d-flex justify-content-between align-items-center mt-3" style={{ fontSize: '14px' }}>
+              {resendCooldown > 0 ? (
+                <span className="text-muted">
+                  Resend code in <strong>{resendCooldown}s</strong>
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={isResending}
+                  className="btn btn-link p-0 text-decoration-none"
+                  style={{ color: 'var(--primary)', fontWeight: 600 }}
+                >
+                  {isResending ? 'Resending...' : 'Resend Passcode'}
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setStep('form')}
+                className="btn btn-link p-0 text-decoration-none text-secondary"
+                style={{ fontWeight: 600 }}
+              >
+                Back to Edit
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-
-      <div className="row">
-        {/* Email */}
-        <div className="col-md-6 mb-3">
-          <label htmlFor="signup-email" className="form-label" style={{ fontWeight: 600 }}>Email Address</label>
-          <input
-            id="signup-email"
-            type="email"
-            className="form-control"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="kasun@example.com"
-            required
-          />
-        </div>
-
-        {/* Phone */}
-        <div className="col-md-6 mb-3">
-          <label htmlFor="signup-phone" className="form-label" style={{ fontWeight: 600 }}>Phone Number</label>
-          <input
-            id="signup-phone"
-            type="tel"
-            className="form-control"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="077XXXXXXX"
-            required
-          />
-        </div>
-      </div>
-
-      <hr className="my-3 text-muted" />
-      <h6 className="mb-3 text-dark" style={{ fontWeight: 700 }}>Delivery Address Details</h6>
-
-      {/* Address line 1 */}
-      <div className="mb-3">
-        <label htmlFor="signup-address" className="form-label" style={{ fontWeight: 600 }}>Address Line 1</label>
-        <input
-          id="signup-address"
-          type="text"
-          className="form-control"
-          value={line1}
-          onChange={(e) => setLine1(e.target.value)}
-          placeholder="No 12, Main Street"
-          required
-        />
-      </div>
-
-      <div className="row">
-        {/* City */}
-        <div className="col-md-6 mb-3">
-          <label htmlFor="signup-city" className="form-label" style={{ fontWeight: 600 }}>City</label>
-          <input
-            id="signup-city"
-            type="text"
-            className="form-control"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            placeholder="Colombo 03"
-            required
-          />
-        </div>
-
-        {/* District */}
-        <div className="col-md-6 mb-3">
-          <label htmlFor="signup-district" className="form-label" style={{ fontWeight: 600 }}>District</label>
-          <select
-            id="signup-district"
-            className="form-select"
-            value={district}
-            onChange={(e) => setDistrict(e.target.value)}
-            required
-          >
-            <option value="">Select District</option>
-            {DISTRICTS.map((d) => (
-              <option key={d} value={d}>{d}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <hr className="my-3 text-muted" />
-      <h6 className="mb-3 text-dark" style={{ fontWeight: 700 }}>Security</h6>
-
-      <div className="row">
-        {/* Password */}
-        <div className="col-md-6 mb-3">
-          <label htmlFor="signup-pass" className="form-label" style={{ fontWeight: 600 }}>Password</label>
-          <input
-            id="signup-pass"
-            type="password"
-            className="form-control"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Min 6 chars"
-            required
-          />
-        </div>
-
-        {/* Confirm password */}
-        <div className="col-md-6 mb-4">
-          <label htmlFor="signup-conf-pass" className="form-label" style={{ fontWeight: 600 }}>Confirm Password</label>
-          <input
-            id="signup-conf-pass"
-            type="password"
-            className="form-control"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-          />
-        </div>
-      </div>
-
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="btn btn-primary w-100 py-2.5 mb-3"
-        style={{ borderRadius: '30px', fontWeight: 700, fontSize: '15px' }}
-      >
-        {isSubmitting ? (
-          <span className="d-flex align-items-center justify-content-center gap-2">
-            <Spinner size="sm" color="#fff" />
-            Sending Code...
-          </span>
-        ) : (
-          'Register Account'
-        )}
-      </button>
-
-      <div className="text-center mt-3" style={{ fontSize: '14px' }}>
-        Already have an account?{' '}
-        <Link href={`/login${searchParams.toString() ? '?' + searchParams.toString() : ''}`} style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>
-          Sign In Here
-        </Link>
-      </div>
-    </form>
+    </div>
   );
 }
 

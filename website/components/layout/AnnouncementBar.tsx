@@ -24,6 +24,7 @@ export default function AnnouncementBar({ enabled, text }: AnnouncementBarProps)
 
   return (
     <div
+      className="announcement-bar"
       style={{
         backgroundColor: 'var(--primary)',
         color: '#fff',

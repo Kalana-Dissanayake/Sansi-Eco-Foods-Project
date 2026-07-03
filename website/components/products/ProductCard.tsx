@@ -1,5 +1,5 @@
 'use client';
-
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '../../context/CartContext';
@@ -41,9 +41,12 @@ function trackAddToCart(product: Product) {
 
 export default function ProductCard({ product, delay = '0.1s' }: ProductCardProps) {
   const { addToCart } = useCart();
+  const [isClicked, setIsClicked] = useState(false);
 
   const handleAddToCart = () => {
     if (!product.inStock) return;
+    setIsClicked(true);
+    setTimeout(() => setIsClicked(false), 300);
     addToCart(product, 1);
     trackAddToCart(product);
     toast.success(`${product.name} added to cart!`, {
@@ -121,12 +124,13 @@ export default function ProductCard({ product, delay = '0.1s' }: ProductCardProp
         <div className="product-actions">
           <Link
             href={`/products/${product.slug}`}
-            className="btn btn-outline-primary"
+            className="btn btn-outline-primary btn-view-detail d-flex align-items-center justify-content-center gap-1"
           >
-            View Detail
+            <i className="fas fa-arrow-right view-detail-arrow"></i>
+            <span>View Detail</span>
           </Link>
           <button
-            className="btn btn-primary"
+            className={`btn btn-primary ${isClicked ? 'clicked-bump' : ''}`}
             onClick={handleAddToCart}
             disabled={!product.inStock}
             aria-label={`Add ${product.name} to cart`}

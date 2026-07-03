@@ -139,22 +139,29 @@ img { max-width: 100%; }
   content: '';
   position: absolute;
   bottom: -2px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0; /* grow from left-to-right */
   width: 0;
   height: 2px;
   background: var(--primary);
-  transition: width 0.3s ease;
+  transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 .navbar .nav-link:hover::after,
 .navbar .nav-link.active::after {
-  width: 80%;
+  width: 100%;
 }
 .navbar .nav-link.active {
   color: var(--primary) !important;
 }
 .navbar-scrolled {
   box-shadow: 0 2px 20px rgba(74,124,89,0.15) !important;
+}
+
+/* Logo hover animation */
+.navbar-brand {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.navbar-brand:hover {
+  transform: scale(1.05);
 }
 
 /* Btn sm-square */
@@ -709,7 +716,8 @@ img { max-width: 100%; }
 /* ─── Navbar Dropdown Hover & Animations ────────────────────── */
 
 /* Suppress Bootstrap's default caret — we use a custom SVG chevron */
-.navbar .nav-link::after {
+.navbar .nav-link.dropdown-toggle::after,
+.navbar .dropdown-toggle::after {
   display: none !important;
 }
 
@@ -771,5 +779,1023 @@ img { max-width: 100%; }
     display: block !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   HOME PAGE INTERACTIVE ANIMATIONS — CSS-only layer (no JS)
+   Layered on top of WOW.js. Uses GPU-composited properties only
+   (transform, opacity) to stay off the main thread.
+   All effects are guarded with prefers-reduced-motion.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Shared Keyframes ─────────────────────────────────────────────── */
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}
+
+@keyframes floatYSlow {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+@keyframes pulseRing {
+  0%   { box-shadow: 0 0 0 0   rgba(74,124,89,0.45); }
+  70%  { box-shadow: 0 0 0 14px rgba(74,124,89,0);   }
+  100% { box-shadow: 0 0 0 0   rgba(74,124,89,0);   }
+}
+
+@keyframes pulseRingGold {
+  0%   { box-shadow: 0 0 0 0   rgba(212,168,83,0.5); }
+  70%  { box-shadow: 0 0 0 14px rgba(212,168,83,0);  }
+  100% { box-shadow: 0 0 0 0   rgba(212,168,83,0);  }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes starTwinkle {
+  0%, 100% { opacity: 1;   transform: scale(1);    }
+  50%       { opacity: 0.6; transform: scale(0.85); }
+}
+
+@keyframes borderGlow {
+  0%, 100% { border-color: var(--secondary); }
+  50%       { border-color: var(--primary);  }
+}
+
+@keyframes whatsappPop {
+  0%   { transform: scale(1);    }
+  30%  { transform: scale(1.15); }
+  60%  { transform: scale(0.95); }
+  100% { transform: scale(1);    }
+}
+
+@keyframes ctaShimmerSlide {
+  0%   { left: -75%; }
+  100% { left: 125%;  }
+}
+
+@keyframes kenBurns {
+  0%   { transform: scale(1)    translateX(0)   translateY(0); }
+  100% { transform: scale(1.06) translateX(-1%) translateY(-0.5%); }
+}
+
+@keyframes iconBounce {
+  0%, 100% { transform: translateY(0)   scale(1);    }
+  40%       { transform: translateY(-7px) scale(1.12); }
+  70%       { transform: translateY(-3px) scale(1.05); }
+}
+
+@keyframes gradientShift {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
+}
+
+
+/* ── 1. HERO CAROUSEL ─────────────────────────────────────────────── */
+
+/* Ken-Burns subtle zoom on active slide image */
+.hero-carousel .carousel-item.active img {
+  animation: kenBurns 8s ease-out both;
+  will-change: transform;
+}
+
+/* Hero CTA buttons — shimmer sweep on hover */
+.hero-carousel .carousel-caption .btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.hero-carousel .carousel-caption .btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: skewX(-20deg);
+  transition: none;
+  pointer-events: none;
+}
+.hero-carousel .carousel-caption .btn:hover::after {
+  animation: ctaShimmerSlide 0.55s ease forwards;
+}
+.hero-carousel .carousel-caption .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+
+/* Carousel nav buttons — hover scale */
+.hero-carousel .carousel-control-prev span,
+.hero-carousel .carousel-control-next span {
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.hero-carousel .carousel-control-prev:hover span,
+.hero-carousel .carousel-control-next:hover span {
+  transform: scale(1.12);
+  background: rgba(255,255,255,0.35) !important;
+}
+
+/* Carousel indicator dots — hover expand */
+.hero-carousel .carousel-indicators button {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.hero-carousel .carousel-indicators button:hover {
+  transform: scale(1.4);
+}
+
+
+/* ── 2. ABOUT SNIPPET ─────────────────────────────────────────────── */
+
+/* Gentle float on the main image */
+.about-img {
+  transition: transform 0.4s ease;
+  will-change: transform;
+}
+.about-img img {
+  transition: transform 0.5s ease, box-shadow 0.5s ease;
+}
+.about-img:hover img {
+  transform: scale(1.03);
+  box-shadow: 0 16px 48px rgba(74,124,89,0.28);
+}
+
+/* Animated decorative border offset */
+.about-img::before {
+  transition: top 0.4s ease, left 0.4s ease, border-color 0.6s ease;
+}
+.about-img:hover::before {
+  top: -26px;
+  left: -26px;
+  animation: borderGlow 2s ease infinite;
+}
+
+/* Checkmark list items — hover slide-right */
+.about-img ~ div li,
+.col-lg-6:last-child li {
+  transition: transform 0.2s ease;
+}
+.about-img ~ div li:hover,
+.col-lg-6:last-child li:hover {
+  transform: translateX(4px);
+}
+
+/* Check icon circles — pulse on hover */
+.col-lg-6:last-child li .rounded-circle {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.col-lg-6:last-child li:hover .rounded-circle {
+  animation: pulseRing 0.8s ease;
+  transform: scale(1.1);
+}
+
+/* About CTA button shimmer */
+.about-img ~ div .btn,
+.col-lg-6:last-child .btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.about-img ~ div .btn::after,
+.col-lg-6:last-child .btn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+.about-img ~ div .btn:hover::after,
+.col-lg-6:last-child .btn:hover::after {
+  animation: ctaShimmerSlide 0.55s ease forwards;
+}
+.about-img ~ div .btn:hover,
+.col-lg-6:last-child .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(74,124,89,0.35);
+}
+
+
+/* ── 3. FEATURED PRODUCTS ─────────────────────────────────────────── */
+
+/* Product card — enhanced lift with glow */
+.product-item {
+  transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.32s ease,
+              border-color 0.3s ease;
+  will-change: transform;
+}
+.product-item:hover {
+  transform: translateY(-10px) scale(1.01);
+  box-shadow: 0 20px 50px rgba(74,124,89,0.18), 0 4px 12px rgba(0,0,0,0.08);
+  border-color: rgba(74,124,89,0.25);
+}
+
+/* Product image — smooth zoom already in place, add overlay shimmer */
+.product-item .product-img::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.12) 50%,
+    rgba(255,255,255,0) 100%);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+.product-item:hover .product-img::after {
+  opacity: 1;
+}
+
+/* Product action buttons */
+.product-item .product-actions .btn {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.product-item .product-actions .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(74,124,89,0.3);
+}
+
+/* "View All" button shimmer */
+.featured-cta-btn {
+  position: relative;
+  overflow: hidden;
+}
+.featured-cta-btn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+.featured-cta-btn:hover::after {
+  animation: ctaShimmerSlide 0.55s ease forwards;
+}
+
+
+/* ── 4. FEATURES SECTION (Why Choose Us) ─────────────────────────── */
+
+/* Feature card — hover float with icon bounce */
+.feature-item {
+  transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.32s ease,
+              border-color 0.3s ease;
+  will-change: transform;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Sweep gradient on hover */
+.feature-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--primary-light) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 0;
+}
+.feature-item > * { position: relative; z-index: 1; }
+.feature-item:hover::before { opacity: 1; }
+
+.feature-item:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 18px 44px rgba(74,124,89,0.15);
+  border-color: rgba(74,124,89,0.2);
+}
+
+/* Feature icon — bounce + pulsing ring on card hover */
+.feature-item .feature-icon {
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  will-change: transform;
+}
+.feature-item:hover .feature-icon {
+  animation: iconBounce 0.65s ease;
+  background-color: var(--primary);
+}
+.feature-item:hover .feature-icon i {
+  color: #fff !important;
+}
+.feature-item .feature-icon i {
+  transition: color 0.3s ease;
+}
+
+/* Section header underline expand */
+.section-header .section-title::after {
+  transition: width 0.4s ease;
+}
+.section-header:hover .section-title::after {
+  width: 90px;
+}
+
+
+/* ── 5. CTA BANNER ────────────────────────────────────────────────── */
+
+/* Animated gradient background */
+.cta-banner {
+  background-size: 200% 200% !important;
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-dark) 40%,
+    #2d5a3d 70%,
+    var(--primary) 100%
+  ) !important;
+  animation: gradientShift 8s ease infinite;
+  will-change: background-position;
+}
+
+/* Floating orbs in CTA banner using ::after */
+.cta-banner::after {
+  content: '';
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+  top: -80px;
+  right: 10%;
+  animation: floatY 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* CTA banner heading — soft glow pulse */
+.cta-banner h2 {
+  text-shadow: 0 2px 20px rgba(0,0,0,0.2);
+  transition: text-shadow 0.3s ease;
+}
+.cta-banner:hover h2 {
+  text-shadow: 0 2px 30px rgba(0,0,0,0.35), 0 0 40px rgba(255,255,255,0.1);
+}
+
+/* CTA button — shimmer + lift + pulse ring */
+.cta-banner .btn-secondary {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: pulseRingGold 2.5s ease infinite;
+}
+.cta-banner .btn-secondary::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+.cta-banner .btn-secondary:hover::after {
+  animation: ctaShimmerSlide 0.55s ease forwards;
+}
+.cta-banner .btn-secondary:hover {
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 12px 32px rgba(212,168,83,0.55);
+  animation: none;
+}
+
+
+/* ── 6. TESTIMONIALS ──────────────────────────────────────────────── */
+
+/* Testimonial card hover float */
+.testimonial-item {
+  transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.32s ease,
+              border-color 0.3s ease;
+  will-change: transform;
+}
+.testimonial-item:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 40px rgba(74,124,89,0.12);
+  border-color: rgba(74,124,89,0.2);
+}
+
+/* Stars — twinkle on card hover */
+.testimonial-item:hover .stars i {
+  animation: starTwinkle 0.8s ease infinite;
+}
+.testimonial-item:hover .stars i:nth-child(2) { animation-delay: 0.1s; }
+.testimonial-item:hover .stars i:nth-child(3) { animation-delay: 0.2s; }
+.testimonial-item:hover .stars i:nth-child(4) { animation-delay: 0.3s; }
+.testimonial-item:hover .stars i:nth-child(5) { animation-delay: 0.4s; }
+
+/* Avatar ring pulse on hover */
+.testimonial-item:hover .d-flex > div:first-child {
+  animation: pulseRing 0.9s ease;
+}
+
+/* Quote text subtle highlight */
+.testimonial-item p {
+  transition: color 0.3s ease;
+}
+.testimonial-item:hover p {
+  color: #444;
+}
+
+
+/* ── 7. WHATSAPP FLOATING BUTTON ──────────────────────────────────── */
+
+/* Continuous pop-bounce every 4s */
+.whatsapp-fab {
+  animation: whatsappPop 4s ease infinite;
+  will-change: transform;
+}
+.whatsapp-fab::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  animation: pulseRing 2s ease infinite;
+  border: 2px solid rgba(37,211,102,0.5);
+  pointer-events: none;
+}
+.whatsapp-fab:hover {
+  transform: scale(1.15) rotate(5deg) !important;
+  box-shadow: 0 8px 28px rgba(37,211,102,0.6) !important;
+  animation: none;
+}
+.whatsapp-fab:hover::before {
+  animation: none;
+}
+
+/* WhatsApp icon spin on hover */
+.whatsapp-fab:hover i {
+  display: inline-block;
+  animation: whatsappPop 0.4s ease;
+}
+
+
+/* ── 8. SECTION HEADERS (global) ──────────────────────────────────── */
+
+/* Underline widens on hover */
+.section-title::after {
+  transition: width 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.section-header:hover .section-title::after {
+  width: 100px;
+}
+
+
+/* ── 9. GENERAL BUTTON MICRO-INTERACTIONS ─────────────────────────── */
+
+/* Arrow icon in buttons — slides right on hover */
+.btn i.fa-arrow-right {
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+.btn:hover i.fa-arrow-right {
+  transform: translateX(4px);
+}
+
+/* ── Cart Icon Bounce ──────────────────────────────────────────────── */
+@keyframes cartBumpAnim {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.3) translateY(-6px); }
+  50% { transform: scale(0.85) translateY(2px); }
+  70% { transform: scale(1.1) translateY(-1px); }
+  100% { transform: scale(1); }
+}
+.cart-bump-animation {
+  animation: cartBumpAnim 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+/* ── Announcement Bar Shimmer ─────────────────────────────────────── */
+.announcement-bar {
+  background: linear-gradient(
+    90deg,
+    var(--primary) 0%,
+    var(--primary) 35%,
+    #69a279 50%,
+    var(--primary) 65%,
+    var(--primary) 100%
+  ) !important;
+  background-size: 200% auto !important;
+  animation: announcementShimmer 4s linear infinite;
+  will-change: background-position;
+}
+@keyframes announcementShimmer {
+  to {
+    background-position: -200% center;
+  }
+}
+
+/* ── Footer Social Icons ───────────────────────────────────────────── */
+.footer .btn-sm-square {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.3s ease, color 0.3s ease !important;
+}
+.footer .btn-sm-square:hover {
+  transform: scale(1.15) rotate(15deg) !important;
+}
+
+/* ── Breadcrumb Staggered Fade-in ──────────────────────────────────── */
+.breadcrumb-item {
+  opacity: 0;
+  animation: breadcrumbFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.breadcrumb-item:nth-child(1) { animation-delay: 0.05s; }
+.breadcrumb-item:nth-child(2) { animation-delay: 0.15s; }
+.breadcrumb-item:nth-child(3) { animation-delay: 0.25s; }
+.breadcrumb-item:nth-child(4) { animation-delay: 0.35s; }
+
+@keyframes breadcrumbFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ── Products Page Header & Grid Animations ──────────────────────── */
+.page-header {
+  animation: fadeDownHeader 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.page-header h1 {
+  animation: fadeUpHeading 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+@keyframes fadeDownHeader {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeUpHeading {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Category Sidebar Checkboxes ───────────────────────────────────── */
+.category-checkbox-label {
+  font-size: 14px;
+  font-weight: 500;
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1),
+              color 0.2s ease,
+              background-color 0.2s ease,
+              border-color 0.2s ease;
+  border: 1.5px solid transparent;
+  color: var(--dark);
+}
+.category-checkbox-label:hover {
+  transform: translateX(4px);
+  color: var(--primary) !important;
+  background-color: var(--primary-light);
+}
+.category-checkbox-label.active {
+  background-color: var(--primary) !important;
+  color: #fff !important;
+  border-color: var(--primary) !important;
+}
+/* Click pop for checked option label */
+.category-radio-input:checked + .category-checkbox-label {
+  animation: categoryClickPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes categoryClickPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05) translateX(4px); }
+  100% { transform: scale(1) translateX(0); }
+}
+
+/* ── Sort Dropdown Focus ───────────────────────────────────────────── */
+.form-select {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.form-select:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.15) !important;
+  transform: translateY(-1px);
+}
+
+/* ── Product Card Animations ───────────────────────────────────────── */
+.product-item {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.3s ease !important;
+}
+.product-item:hover {
+  transform: translateY(-8px) !important;
+  box-shadow: 0 16px 36px rgba(74, 124, 89, 0.18) !important; /* Soft green shadow */
+}
+.product-item:hover .product-img img {
+  transform: scale(1.06) !important; /* 1.06 slow zoom */
+}
+
+/* View Detail slide arrow */
+.btn-view-detail {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+.btn-view-detail .view-detail-arrow {
+  transform: translateX(-15px);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
+  width: 0;
+  display: inline-block;
+}
+.btn-view-detail:hover .view-detail-arrow {
+  transform: translateX(0);
+  opacity: 1;
+  width: auto;
+  margin-right: 4px;
+}
+
+/* Urgency pulse */
+.badge-low-stock {
+  animation: lowStockPulse 2s infinite !important;
+}
+@keyframes lowStockPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(212, 168, 83, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(212, 168, 83, 0);
+  }
+}
+
+/* New Badge Rotate Entrance */
+.badge-new {
+  animation: rotateInBadge 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+@keyframes rotateInBadge {
+  from {
+    opacity: 0;
+    transform: rotate(-30deg) scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0) scale(1);
+  }
+}
+
+/* Click scale pop for Add to Cart */
+.clicked-bump {
+  animation: clickedBumpAnim 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
+  background-color: #5ba16f !important; /* briefly brighten background */
+  border-color: #5ba16f !important;
+}
+@keyframes clickedBumpAnim {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.93); }
+  100% { transform: scale(1); }
+}
+
+/* ── Product Detail Page Animations ───────────────────────────────── */
+
+/* Main image load & hover zoom */
+.product-detail-image-container {
+  opacity: 0;
+  transform: scale(0.96);
+  animation: detailImageLoad 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+.product-detail-image-container:hover .product-detail-image {
+  transform: scale(1.03) !important;
+}
+.product-detail-image {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+@keyframes detailImageLoad {
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Health tag pop in stagger */
+.detail-health-tag {
+  opacity: 0;
+  transform: scale(0.7);
+  animation: healthTagBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+.detail-health-tags span:nth-child(1) { animation-delay: 0.05s; }
+.detail-health-tags span:nth-child(2) { animation-delay: 0.12s; }
+.detail-health-tags span:nth-child(3) { animation-delay: 0.19s; }
+.detail-health-tags span:nth-child(4) { animation-delay: 0.26s; }
+@keyframes healthTagBounce {
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Save Discount flash */
+.save-discount-badge {
+  animation: discountBadgeFlash 1.6s cubic-bezier(0.25, 0.8, 0.25, 1) both;
+}
+@keyframes discountBadgeFlash {
+  0% { background-color: var(--secondary) !important; transform: scale(1.12); }
+  45% { background-color: var(--secondary) !important; transform: scale(1.12); }
+  100% { background-color: #e74c3c !important; transform: scale(1); }
+}
+
+/* Quantity controls active click spring */
+.qty-control button {
+  transition: transform 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.qty-control button:active {
+  transform: scale(0.86) !important;
+}
+
+/* Add to Cart button hover/active details */
+.btn-detail-add-to-cart {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.btn-detail-add-to-cart:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 6px 20px rgba(0, 210, 106, 0.4) !important;
+}
+.checkmark-flash {
+  animation: checkmarkPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+@keyframes checkmarkPop {
+  from { transform: scale(0) rotate(-45deg); opacity: 0; }
+  to { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+/* Tabs switcher content fade */
+.tab-fade-in {
+  animation: tabFadeInAnim 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes tabFadeInAnim {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
+/* ── Cart Page Animations ─────────────────────────────────────────── */
+
+/* Empty Cart State Staggered Fade Up */
+.cart-empty-icon {
+  opacity: 0;
+  transform: scale(0.6);
+  animation: emptyIconBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+.cart-empty-title {
+  opacity: 0;
+  transform: translateY(15px);
+  animation: emptyFadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+}
+.cart-empty-text {
+  opacity: 0;
+  transform: translateY(15px);
+  animation: emptyFadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.25s forwards;
+}
+.cart-empty-btn {
+  opacity: 0;
+  transform: translateY(15px);
+  animation: emptyFadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.35s forwards;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease !important;
+}
+.cart-empty-btn:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 6px 18px rgba(74, 124, 89, 0.3) !important;
+}
+
+@keyframes emptyIconBounce {
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes emptyFadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Cart item rows entrance and exit */
+.cart-item-row {
+  animation: cartItemSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+.cart-item-row.removing-item {
+  animation: cartItemSlideOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+@keyframes cartItemSlideIn {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes cartItemSlideOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(-24px); }
+}
+
+/* Coupon validations */
+.coupon-input-spin {
+  animation: couponBorderSpin 1.2s linear infinite !important;
+  border-width: 1.5px !important;
+}
+@keyframes couponBorderSpin {
+  0%, 100% { border-color: var(--primary); }
+  50% { border-color: var(--secondary); }
+}
+.coupon-error-shake {
+  animation: couponShake 0.4s ease-in-out both;
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15) !important;
+}
+@keyframes couponShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+.coupon-success-pop {
+  animation: couponSuccessPopAnim 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.15) !important;
+}
+@keyframes couponSuccessPopAnim {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+/* Total Price Flash */
+.total-highlight-flash {
+  animation: totalGreenFlash 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  display: inline-block;
+}
+@keyframes totalGreenFlash {
+  0% { background-color: rgba(74, 124, 89, 0.22); border-radius: 4px; padding: 0 6px; }
+  100% { background-color: transparent; }
+}
+
+/* Proceed Checkout Pulse */
+.btn-checkout-pulse {
+  position: relative;
+  overflow: hidden;
+  animation: checkoutPulseShadow 2s infinite;
+}
+@keyframes checkoutPulseShadow {
+  0% { box-shadow: 0 0 0 0 rgba(74, 124, 89, 0.45); }
+  70% { box-shadow: 0 0 0 10px rgba(74, 124, 89, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(74, 124, 89, 0); }
+}
+.btn-checkout-pulse:hover {
+  animation: none;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(74, 124, 89, 0.35) !important;
+}
+
+/* ── Contact Page Animations ──────────────────────────────────────── */
+
+/* Staggered cards entrance */
+.contact-info-list-item {
+  opacity: 0;
+  transform: translateY(15px);
+  animation: contactFadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+.contact-info-list-item:nth-child(1) { animation-delay: 0.1s; }
+.contact-info-list-item:nth-child(2) { animation-delay: 0.2s; }
+.contact-info-list-item:nth-child(3) { animation-delay: 0.3s; }
+@keyframes contactFadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* IconWrapper hover bounce */
+.contact-info-list-item:hover .contact-info-icon-wrapper i {
+  animation: iconBounce 0.65s ease;
+}
+
+/* Social icons hover */
+.contact-social-icon {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease !important;
+}
+.contact-social-icon:hover {
+  transform: scale(1.15) rotate(15deg) !important;
+  background-color: var(--secondary) !important;
+}
+
+/* WhatsApp button pulse */
+.whatsapp-btn-pulse {
+  animation: whatsappPulse 2s infinite;
+}
+@keyframes whatsappPulse {
+  0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.55); }
+  70% { box-shadow: 0 0 0 10px rgba(37, 211, 102, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+}
+.whatsapp-btn-pulse:hover {
+  animation: none;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(37, 211, 102, 0.4) !important;
+}
+
+/* Form input focus label & border */
+.form-floating > .form-control:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.15) !important;
+}
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+  color: var(--primary) !important;
+}
+
+/* Send message hover button */
+.btn-send-message {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s ease,
+              background-color 0.25s ease !important;
+}
+.btn-send-message:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 6px 18px rgba(74, 124, 89, 0.35) !important;
+}
+
+/* Checkmark anim */
+.animate-checkmark {
+  animation: checkmarkPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+/* ── Auth Pages Animations ────────────────────────────────────────── */
+
+/* Login & Signup Card entrance */
+.login-card,
+.signup-card {
+  opacity: 0;
+  transform: scale(0.96) translateY(10px);
+  animation: authCardEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+@keyframes authCardEntrance {
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Sign In & Register Buttons hover */
+.btn-signin,
+.btn-signup {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s ease,
+              background-color 0.2s ease !important;
+}
+.btn-signin:hover,
+.btn-signup:hover {
+  transform: translateY(-2.5px) !important;
+  box-shadow: 0 6px 16px rgba(74, 124, 89, 0.3) !important;
+}
+.btn-signin:active,
+.btn-signup:active {
+  transform: translateY(0) scale(0.96) !important;
+}
+
+/* Auth link transition link */
+.auth-link {
+  position: relative;
+  display: inline-block;
+  transition: color 0.2s ease;
+}
+.auth-link::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 0;
+  height: 1.5px;
+  background-color: var(--primary);
+  transition: width 0.25s ease;
+}
+.auth-link:hover::after {
+  width: 100%;
+}
+
+/* Password criteria checkbox check checkmark popup */
+.criterion-met {
+  animation: criterionMetPop 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+@keyframes criterionMetPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+
+/* ── PERFORMANCE SAFETY ───────────────────────────────────────────── */
+/* Disable all custom animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .about-img,
+  .hero-carousel .carousel-item.active img,
+  .feature-item,
+  .feature-item::before,
+  .feature-item .feature-icon,
+  .product-item,
+  .testimonial-item,
+  .cta-banner,
+  .cta-banner::after,
+  .cta-banner .btn-secondary,
+  .whatsapp-fab,
+  .whatsapp-fab::before,
+  .btn i.fa-arrow-right,
+  .section-title::after,
+  .hero-carousel .carousel-caption .btn,
+  .hero-carousel .carousel-caption .btn::after {
+    animation: none !important;
+    transition: none !important;
   }
 }

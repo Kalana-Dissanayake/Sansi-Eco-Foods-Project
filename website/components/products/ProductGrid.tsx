@@ -146,36 +146,59 @@ export default function ProductGrid({
         </div>
       </div>
 
-      {/* Category Dropdown Selection */}
+      {/* Category Selection */}
       <div className="mb-4">
-        <label htmlFor="categorySelect" className="form-label fw-bold mb-2" style={{ fontSize: '14px' }}>
+        <label className="form-label fw-bold mb-2" style={{ fontSize: '14px' }}>
           Category
         </label>
-        <select
-          id="categorySelect"
-          className="form-select cursor-pointer"
-          value={selectedCategory}
-          onChange={(e) => {
-            const val = e.target.value;
-            setSelectedCategory(val);
-            if (val === 'all') {
-              router.push('/products');
-            } else {
-              router.push(`/products?category=${val}`);
-            }
-          }}
-          style={{ borderRadius: '8px', fontSize: '14px', padding: '8px 12px' }}
-        >
-          <option value="all">All Categories ({products.length})</option>
+        <div className="d-flex flex-column gap-2">
+          <div className="category-checkbox-item">
+            <input
+              type="radio"
+              name="categoryFilter"
+              id="cat-all"
+              className="category-radio-input d-none"
+              checked={selectedCategory === 'all'}
+              onChange={() => {
+                setSelectedCategory('all');
+                router.push('/products');
+              }}
+            />
+            <label
+              htmlFor="cat-all"
+              className={`category-checkbox-label d-flex align-items-center justify-content-between p-2.5 rounded cursor-pointer ${selectedCategory === 'all' ? 'active' : ''}`}
+            >
+              <span>All Categories</span>
+              <span className="badge bg-light text-dark border">{products.length}</span>
+            </label>
+          </div>
           {categories.map((cat) => {
             const count = getProductCountByCategory(cat.id);
+            const isSelected = selectedCategory === cat.id;
             return (
-              <option key={cat.id} value={cat.id}>
-                {cat.name} ({count})
-              </option>
+              <div key={cat.id} className="category-checkbox-item">
+                <input
+                  type="radio"
+                  name="categoryFilter"
+                  id={`cat-${cat.id}`}
+                  className="category-radio-input d-none"
+                  checked={isSelected}
+                  onChange={() => {
+                    setSelectedCategory(cat.id);
+                    router.push(`/products?category=${cat.id}`);
+                  }}
+                />
+                <label
+                  htmlFor={`cat-${cat.id}`}
+                  className={`category-checkbox-label d-flex align-items-center justify-content-between p-2.5 rounded cursor-pointer ${isSelected ? 'active' : ''}`}
+                >
+                  <span>{cat.name}</span>
+                  <span className="badge bg-light text-dark border">{count}</span>
+                </label>
+              </div>
             );
           })}
-        </select>
+        </div>
       </div>
 
       {/* Price Range Slider & Inputs */}
@@ -444,7 +467,7 @@ export default function ProductGrid({
                 <div key={product.id} className="col-xl-4 col-md-6">
                   <ProductCard
                     product={product}
-                    delay={`${0.05 + (index % 6) * 0.06}s`}
+                    delay={`${0.1 + (index % 6) * 0.1}s`}
                   />
                 </div>
               ))}
