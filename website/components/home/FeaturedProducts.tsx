@@ -9,7 +9,7 @@ interface FeaturedProductsProps {
 
 export default function FeaturedProducts({ products }: FeaturedProductsProps) {
   return (
-    <section className="section-padding" style={{ background: '#fff' }}>
+    <section className="section-padding featured-products-section" style={{ background: '#fff', position: 'relative', overflow: 'hidden' }}>
       <div className="container-fluid px-lg-5">
         <SectionHeader
           title="Our Featured Products"

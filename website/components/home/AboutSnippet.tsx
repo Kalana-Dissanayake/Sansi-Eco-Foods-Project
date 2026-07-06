@@ -1,32 +1,87 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+const BULLETS = [
+  {
+    icon: 'fa-seedling',
+    text: '100% Natural ingredients — no chemicals, no preservatives',
+  },
+  {
+    icon: 'fa-map-marker-alt',
+    text: 'Handcrafted in Anamaduwa, North Western Province',
+  },
+  {
+    icon: 'fa-motorcycle',
+    text: 'Island-wide Cash on Delivery delivery',
+  },
+];
+
 export default function AboutSnippet() {
   return (
-    <section className="section-padding" style={{ background: '#fff' }}>
-      <div className="container-fluid px-lg-5">
+    <section
+      className="section-padding about-section"
+      style={{ background: 'var(--about-bg)', overflow: 'hidden', position: 'relative' }}
+    >
+      {/* Decorative blobs */}
+      <div className="about-bg-blob about-bg-blob--tl" aria-hidden="true" />
+      <div className="about-bg-blob about-bg-blob--br" aria-hidden="true" />
+
+      <div className="container-fluid px-lg-5" style={{ position: 'relative', zIndex: 1 }}>
         <div className="row g-5 align-items-center">
-          {/* Image Column */}
+
+          {/* ── Image Grid Column (left) ── */}
           <div className="col-lg-6 wow animate__fadeInLeft" data-wow-delay="0.1s">
-            <div className="about-img">
-              <Image
-                src="/images/about-hero.png"
-                alt="Sansi Eco Foods natural dehydrated fruit production in Anamaduwa, Sri Lanka"
-                width={580}
-                height={440}
-                style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
-                className="rounded"
-              />
+            <div className="about-img-grid">
+
+              {/* img1 — large, spans full height on left */}
+              <div className="about-img-grid__large">
+                <Image
+                  src="/images/About-us-img1.png"
+                  alt="Sansi Eco Foods artisans handcrafting dehydrated fruit snacks in Anamaduwa"
+                  fill
+                  sizes="(max-width: 991px) 100vw, 50vw"
+                  style={{ objectFit: 'cover' }}
+                  className="about-grid-img"
+                  priority
+                />
+              </div>
+
+              {/* Right column: img2 (top) + img3 (bottom) */}
+              <div className="about-img-grid__col">
+                <div className="about-img-grid__small">
+                  <Image
+                    src="/images/About-us-img2.jpg"
+                    alt="Colourful assorted dehydrated tropical fruit mix"
+                    fill
+                    sizes="(max-width: 991px) 50vw, 25vw"
+                    style={{ objectFit: 'cover' }}
+                    className="about-grid-img wow animate__fadeInDown"
+                    data-wow-delay="0.25s"
+                  />
+                </div>
+                <div className="about-img-grid__small">
+                  <Image
+                    src="/images/About-us-img3.jpg"
+                    alt="Fresh tropical fruits arranged beautifully on a platter"
+                    fill
+                    sizes="(max-width: 991px) 50vw, 25vw"
+                    style={{ objectFit: 'cover' }}
+                    className="about-grid-img wow animate__fadeInUp"
+                    data-wow-delay="0.35s"
+                  />
+                </div>
+              </div>
+
             </div>
           </div>
 
-          {/* Text Column */}
+          {/* ── Text Column (right) ── */}
           <div className="col-lg-6 wow animate__fadeInRight" data-wow-delay="0.2s">
             <div className="ps-lg-3">
               <span
                 className="d-inline-block mb-2 px-3 py-1 rounded-pill"
                 style={{
-                  background: 'var(--primary-light)',
+                  background: 'rgba(74,124,89,0.12)',
                   color: 'var(--primary)',
                   fontSize: '13px',
                   fontWeight: 600,
@@ -35,10 +90,12 @@ export default function AboutSnippet() {
               >
                 🌿 About Us
               </span>
+
               <h2 className="mb-4">
                 Best Natural Dehydrated Fruit Snacks in Sri Lanka
               </h2>
-              <p className="mb-4" style={{ lineHeight: 1.9, color: '#555' }}>
+
+              <p className="mb-4" style={{ lineHeight: 1.9, color: '#4a5568' }}>
                 Nestled in the heart of Anamaduwa, North Western Province, Sansi Eco Foods was
                 born from a deep love for Sri Lanka&apos;s bountiful tropical fruits and a
                 commitment to healthy, chemical-free snacking. We use traditional dehydration
@@ -47,26 +104,12 @@ export default function AboutSnippet() {
               </p>
 
               <ul className="list-unstyled mb-4">
-                {[
-                  '100% Natural ingredients — no chemicals, no preservatives',
-                  'Handcrafted in Anamaduwa, North Western Province',
-                  'Island-wide Cash on Delivery delivery',
-                ].map((point, i) => (
-                  <li key={i} className="d-flex align-items-start mb-3">
-                    <span
-                      className="me-3 mt-1 d-flex align-items-center justify-content-center rounded-circle"
-                      style={{
-                        width: '24px',
-                        height: '24px',
-                        minWidth: '24px',
-                        background: 'var(--primary)',
-                        color: '#fff',
-                        fontSize: '12px',
-                      }}
-                    >
-                      <i className="fas fa-check"></i>
+                {BULLETS.map((item, i) => (
+                  <li key={i} className="about-bullet">
+                    <span className="about-bullet__icon">
+                      <i className={`fas ${item.icon}`}></i>
                     </span>
-                    <span style={{ color: '#555', lineHeight: 1.6 }}>{point}</span>
+                    <span className="about-bullet__text">{item.text}</span>
                   </li>
                 ))}
               </ul>
@@ -80,6 +123,7 @@ export default function AboutSnippet() {
               </Link>
             </div>
           </div>
+
         </div>
       </div>
     </section>

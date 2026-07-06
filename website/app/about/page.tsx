@@ -112,17 +112,35 @@ export default function AboutPage() {
           </div>
           <div className="row g-4">
             {[
-              { icon: 'fa-leaf', title: 'Natural First', desc: 'Every ingredient we use is 100% natural. We never compromise on this principle — not for cost, not for convenience. From sourcing to packaging, natural is our standard.' },
-              { icon: 'fa-award', title: 'Quality Guaranteed', desc: 'Each batch is carefully inspected and tested to ensure you receive only the finest dehydrated fruits. If it\'s not perfect, it doesn\'t leave our facility.' },
-              { icon: 'fa-hands-helping', title: 'Community Rooted', desc: 'We partner directly with local farmers, supporting Sri Lanka\'s agricultural community and ensuring the freshest possible fruits while contributing to rural livelihoods.' },
+              {
+                icon: 'fa-leaf',
+                title: 'Natural First',
+                accent: 'var(--primary)',
+                accentLight: 'rgba(74,124,89,0.1)',
+                desc: 'Every ingredient we use is 100% natural. We never compromise on this principle — not for cost, not for convenience. From sourcing to packaging, natural is our standard.',
+              },
+              {
+                icon: 'fa-award',
+                title: 'Quality Guaranteed',
+                accent: '#c8861a',
+                accentLight: 'rgba(212,168,83,0.12)',
+                desc: "Each batch is carefully inspected and tested to ensure you receive only the finest dehydrated fruits. If it's not perfect, it doesn't leave our facility.",
+              },
+              {
+                icon: 'fa-hands-helping',
+                title: 'Community Rooted',
+                accent: '#1a7a7a',
+                accentLight: 'rgba(26,122,122,0.1)',
+                desc: "We partner directly with local farmers, supporting Sri Lanka's agricultural community and ensuring the freshest possible fruits while contributing to rural livelihoods.",
+              },
             ].map((value, i) => (
               <div key={i} className="col-md-4 wow animate__fadeInUp" data-wow-delay={`${0.1 + i * 0.15}s`}>
-                <div className="feature-item h-100">
-                  <div className="feature-icon">
-                    <i className={`fas ${value.icon}`}></i>
+                <div className="value-card h-100" style={{ '--vc-accent': value.accent, '--vc-accent-light': value.accentLight } as React.CSSProperties}>
+                  <div className="value-card__icon-wrap">
+                    <i className={`fas ${value.icon} value-card__icon`}></i>
                   </div>
-                  <h5 className="mb-3" style={{ fontFamily: 'var(--font-heading)' }}>{value.title}</h5>
-                  <p style={{ color: '#666', lineHeight: 1.8, fontSize: '15px' }}>{value.desc}</p>
+                  <h4 className="value-card__title">{value.title}</h4>
+                  <p className="value-card__desc">{value.desc}</p>
                 </div>
               </div>
             ))}
