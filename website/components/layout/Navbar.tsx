@@ -82,10 +82,10 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`navbar navbar-expand-lg navbar-light py-3 py-lg-0 px-lg-5 sticky-top ${scrolled ? 'navbar-scrolled' : ''}`}
+      className={`navbar navbar-expand-lg navbar-light py-3 py-lg-3 px-lg-5 sticky-top ${scrolled ? 'navbar-scrolled' : ''}`}
       style={{
         background: '#fff',
-        boxShadow: scrolled ? '0 2px 20px rgba(74,124,89,0.12)' : '0 2px 8px rgba(0,0,0,0.06)',
+        boxShadow: scrolled ? '0 2px 20px rgba(74,124,89,0.12)' : '0 2px 16px rgba(0,0,0,0.08)',
         transition: 'box-shadow 0.3s ease',
         zIndex: 1050,
       }}
@@ -94,7 +94,7 @@ export default function Navbar() {
         <img
           src="/images/sansi-logo.png"
           alt="Sansi Eco Foods Logo"
-          style={{ height: '40px', marginRight: '10px' }}
+          style={{ height: '46px', marginRight: '12px' }}
         />
         <h1 className="m-0" style={{
           fontFamily: 'var(--font-open-sans), sans-serif',
@@ -133,7 +133,7 @@ export default function Navbar() {
               <Link
                 href={href}
                 onClick={() => setIsOpen(false)}
-                className={`nav-link px-3 ${isActive(href) ? 'active' : ''}`}
+                className={`nav-link px-3 py-2 ${isActive(href) ? 'active' : ''}`}
                 style={{ fontWeight: isActive(href) ? 600 : 500 }}
               >
                 {label}
@@ -157,7 +157,7 @@ export default function Navbar() {
                   setIsOpen(false);
                 }
               }}
-              className={`nav-link px-3 d-flex align-items-center gap-1 ${isActive('/products') ? 'active' : ''}`}
+              className={`nav-link px-3 py-2 d-flex align-items-center gap-1 ${isActive('/products') ? 'active' : ''}`}
               style={{ fontWeight: isActive('/products') ? 600 : 500 }}
             >
               Products
@@ -221,7 +221,7 @@ export default function Navbar() {
               <Link
                 href={href}
                 onClick={() => setIsOpen(false)}
-                className={`nav-link px-3 ${isActive(href) ? 'active' : ''}`}
+                className={`nav-link px-3 py-2 ${isActive(href) ? 'active' : ''}`}
                 style={{ fontWeight: isActive(href) ? 600 : 500 }}
               >
                 {label}
@@ -240,7 +240,7 @@ export default function Navbar() {
                   setIsUserDropdownOpen(!isUserDropdownOpen);
                 }}
                 className="nav-link px-3 d-flex align-items-center gap-1 border-0 bg-transparent w-100 text-start"
-                style={{ 
+                style={{
                   fontWeight: 500,
                   color: 'var(--dark)',
                   outline: 'none',
@@ -307,7 +307,7 @@ export default function Navbar() {
               <Link
                 href="/login"
                 onClick={() => setIsOpen(false)}
-                className={`nav-link px-3 ${isActive('/login') ? 'active' : ''}`}
+                className={`nav-link px-3 py-2 ${isActive('/login') ? 'active' : ''}`}
                 style={{ fontWeight: isActive('/login') ? 600 : 500 }}
               >
                 Sign In
